@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm build *)",
+      "Bash(webpack *)",
+      "Bash(python* -m uvicorn *)",
+      "Bash(python* -m http.server *)",
+      "Bash(curl *)",
+      "Bash(ps *)",
+      "Bash(pkill *)",
+      "Bash(cd *)",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Read",
+      "Glob",
+      "Grep",
+      "LS"
+    ]
+  },
+  "autoAcceptEdits": true,
+  "project": "ordnungshub",
+  "description": "OrdnungsHub AI-Powered System Organizer"
+}

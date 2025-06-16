@@ -1,0 +1,46 @@
+.virtual-list-container {
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+.virtual-list-content {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list-items {
+  will-change: transform;
+}
+
+.virtual-list-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling */
+.virtual-list-container {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for cleaner look (optional) */
+.virtual-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtual-list-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.virtual-list-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.virtual-list-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

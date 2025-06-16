@@ -1,0 +1,6 @@
+packages:
+  - 'packages/*'
+
+# Enable shared dependencies
+prefer-workspace-packages: true
+shared-workspace-lockfile: true

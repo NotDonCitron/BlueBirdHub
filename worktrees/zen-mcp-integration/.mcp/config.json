@@ -1,0 +1,98 @@
+{
+  "mcpServers": {
+    "sqlite-ordnungshub": {
+      "command": "node",
+      "args": ["./mcp-servers/sqlite-server/server.js"],
+      "cwd": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/95273afa2cf3cfbc67a1caafbc22e8370bc389288e47600bf338dc7dc12dbb26/CascadeProjects/nnewcoededui/worktrees/zen-mcp-integration",
+      "env": {
+        "ORDNUNGSHUB_DB_PATH": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/95273afa2cf3cfbc67a1caafbc22e8370bc389288e47600bf338dc7dc12dbb26/CascadeProjects/nnewcoededui/worktrees/data/ordnungshub.db"
+      },
+      "description": "SQLite database operations for OrdnungsHub AI file organization",
+      "capabilities": [
+        "query_database",
+        "execute_database", 
+        "get_schema",
+        "backup_database",
+        "analyze_file_data",
+        "get_ai_insights"
+      ],
+      "metadata": {
+        "category": "database",
+        "version": "1.0.0",
+        "requires": ["better-sqlite3"],
+        "features": [
+          "AI-optimized database schema",
+          "File organization analytics",
+          "Performance insights",
+          "Full-text search",
+          "Machine learning integration"
+        ]
+      }
+    }
+  },
+  "tools": {
+    "sqlite-ordnungshub": {
+      "query_database": {
+        "description": "Execute SELECT queries on the OrdnungsHub database",
+        "security": "read-only",
+        "examples": [
+          "SELECT * FROM workspaces",
+          "SELECT category, COUNT(*) FROM file_metadata GROUP BY category",
+          "SELECT * FROM file_metadata WHERE ai_confidence > 0.8"
+        ]
+      },
+      "execute_database": {
+        "description": "Execute INSERT, UPDATE, DELETE operations",
+        "security": "write-access",
+        "examples": [
+          "INSERT INTO file_metadata (filename, file_path, category) VALUES (?, ?, ?)",
+          "UPDATE file_metadata SET ai_category = ? WHERE id = ?",
+          "DELETE FROM tasks WHERE status = 'completed' AND completed_at < ?"
+        ]
+      },
+      "get_schema": {
+        "description": "Get database schema information",
+        "security": "read-only",
+        "examples": [
+          "Get all tables",
+          "Get schema for file_metadata table",
+          "Get indexes and constraints"
+        ]
+      },
+      "analyze_file_data": {
+        "description": "Analyze file organization patterns",
+        "security": "read-only",
+        "examples": [
+          "Analyze file distribution by category",
+          "Get file size statistics",
+          "Find duplicate files by hash"
+        ]
+      },
+      "get_ai_insights": {
+        "description": "Generate AI insights from database patterns",
+        "security": "read-only",
+        "examples": [
+          "Get file creation patterns",
+          "Analyze user behavior",
+          "Workspace efficiency metrics"
+        ]
+      }
+    }
+  },
+  "global": {
+    "logLevel": "info",
+    "timeout": 30000,
+    "retries": 3,
+    "security": {
+      "allowedOperations": ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      "forbiddenPatterns": ["DROP", "ALTER", "TRUNCATE"],
+      "requireAuthentication": false
+    },
+    "performance": {
+      "connectionPoolSize": 5,
+      "queryTimeout": 10000,
+      "cacheResults": true,
+      "maxCacheSize": 100
+    }
+  }
+}

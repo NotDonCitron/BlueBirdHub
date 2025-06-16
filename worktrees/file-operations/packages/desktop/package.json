@@ -1,0 +1,43 @@
+{
+  "name": "@ordnungshub/desktop",
+  "version": "0.1.0",
+  "description": "OrdnungsHub Desktop Application",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "npm-run-all --parallel dev:build dev:electron",
+    "dev:build": "webpack --mode development --watch",
+    "dev:electron": "wait-on dist/main/main.js && electron . --dev",
+    "build": "webpack --mode production",
+    "package": "electron-builder",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "electron": "^36.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^22.15.30",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.28.0",
+    "npm-run-all": "^4.1.5",
+    "playwright": "^1.53.0",
+    "typescript": "^5.8.3",
+    "wait-on": "^8.0.3",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
+  },
+  "build": {
+    "appId": "com.ordnungshub.desktop",
+    "productName": "OrdnungsHub",
+    "directories": {
+      "output": "../../dist/desktop"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ]
+  }
+}

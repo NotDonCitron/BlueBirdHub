@@ -1,0 +1,41 @@
+{
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/tasks/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/workspaces/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/ai/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api-only.html"
+    }
+  ]
+}

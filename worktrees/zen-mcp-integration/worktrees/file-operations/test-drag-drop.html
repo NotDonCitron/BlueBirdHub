@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrdnungsHub - Drag & Drop Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .drop-zone {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 60px 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .drop-zone.drag-over {
+            border-color: #4CAF50;
+            background: #f1f8e9;
+            transform: scale(1.02);
+        }
+        .drop-zone-text {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 OrdnungsHub - File Operations Test</h1>
+        
+        <div class="status">
+            <strong>Status:</strong> 
+            <span id="backend-status">Checking backend...</span><br>
+            <strong>Frontend:</strong> http://localhost:3001<br>
+            <strong>Backend:</strong> http://127.0.0.1:8001
+        </div>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-text">
+                <strong>Dateien hier hineinziehen</strong><br>
+                oder klicken zum Auswählen
+            </div>
+            <input type="file" id="fileInput" multiple style="display: none;">
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn" onclick="openMainApp()">🎯 Zur Hauptanwendung</button>
+            <button class="btn" onclick="testAPI()">🔧 API Test</button>
+            <button class="btn" onclick="clearFiles()">🗑️ Löschen</button>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+
+        // Check backend status
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch('http://127.0.0.1:8001/health');
+                const data = await response.json();
+                document.getElementById('backend-status').innerHTML = 
+                    `<span class="success">✅ ${data.message}</span>`;
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    `<span class="error">❌ Backend nicht erreichbar</span>`;
+            }
+        }
+
+        // Setup drag and drop
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        // Click to select files
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                uploadedFiles.push(file);
+                displayFile(file);
+                // simulateUpload(file);
+            });
+        }
+
+        function displayFile(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div>
+                    <strong>${file.name}</strong><br>
+                    <small>${formatFileSize(file.size)} • ${file.type || 'Unknown type'}</small>
+                </div>
+                <div>
+                    <span class="success">✅ Bereit</span>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function openMainApp() {
+            window.open('http://localhost:3001', '_blank');
+        }
+
+        async function testAPI() {
+            try {
+                const response = await fetch('http://127.0.0.1:8001/');
+                const data = await response.json();
+                alert(`API Test erfolgreich:\\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                alert(`API Test fehlgeschlagen:\\n${error.message}`);
+            }
+        }
+
+        function clearFiles() {
+            uploadedFiles = [];
+            fileList.innerHTML = '';
+        }
+
+        // Initialize
+        checkBackendStatus();
+        
+        // Check status every 10 seconds
+        setInterval(checkBackendStatus, 10000);
+    </script>
+</body>
+</html>

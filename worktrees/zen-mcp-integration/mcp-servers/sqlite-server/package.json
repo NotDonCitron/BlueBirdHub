@@ -1,0 +1,52 @@
+{
+  "name": "@ordnungshub/sqlite-mcp-server",
+  "version": "1.0.0",
+  "description": "SQLite MCP Server for OrdnungsHub AI-powered file organization",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "ordnungshub-sqlite-mcp": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --inspect server.js",
+    "test": "node test.js",
+    "init-db": "node init-database.js"
+  },
+  "keywords": [
+    "mcp",
+    "sqlite",
+    "ai",
+    "file-organization",
+    "ordnungshub"
+  ],
+  "author": "OrdnungsHub Team",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^9.2.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordnungshub/sqlite-mcp-server"
+  },
+  "mcp": {
+    "server": {
+      "name": "sqlite-ordnungshub",
+      "description": "SQLite database operations for OrdnungsHub",
+      "capabilities": [
+        "query_database",
+        "execute_database", 
+        "get_schema",
+        "backup_database",
+        "analyze_file_data",
+        "get_ai_insights"
+      ]
+    }
+  }
+}

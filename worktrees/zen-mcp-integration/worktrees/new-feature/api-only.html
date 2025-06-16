@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrdnungsHub API - Live Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .api-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .api-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .endpoint {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 3px solid #28a745;
+        }
+        
+        .endpoint-url {
+            font-family: monospace;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .response-section {
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        
+        .response {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        
+        .deployment-info {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .deployment-url {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 16px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗂️ OrdnungsHub API</h1>
+            <p>AI-Powered File Organization & Task Management Backend</p>
+            <div>
+                <span class="status">🚀 DEPLOYMENT READY</span>
+            </div>
+        </div>
+
+        <div class="deployment-info">
+            <h2>✨ Backend API Successfully Deployed!</h2>
+            <p>The core OrdnungsHub backend is now running on Vercel</p>
+            <div class="deployment-url" id="api-url">
+                Detecting API URL...
+            </div>
+        </div>
+
+        <div class="api-grid">
+            <div class="api-card">
+                <h3>🤖 Taskmaster AI Integration</h3>
+                <p>Intelligent task management with AI-powered recommendations</p>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /tasks/taskmaster/all</div>
+                    <p>Get all tasks with AI insights</p>
+                    <button class="btn" onclick="testEndpoint('/tasks/taskmaster/all')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /tasks/taskmaster/next</div>
+                    <p>Get AI-recommended next task</p>
+                    <button class="btn" onclick="testEndpoint('/tasks/taskmaster/next')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /tasks/taskmaster/progress</div>
+                    <p>View project progress analytics</p>
+                    <button class="btn" onclick="testEndpoint('/tasks/taskmaster/progress')">Test</button>
+                </div>
+            </div>
+
+            <div class="api-card">
+                <h3>🏠 Enhanced Workspaces</h3>
+                <p>AI-powered workspace management and content assignment</p>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /workspaces/templates</div>
+                    <p>Get workspace templates</p>
+                    <button class="btn" onclick="testEndpoint('/workspaces/templates')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">POST /workspaces/1/assign-content</div>
+                    <p>AI content assignment demo</p>
+                    <button class="btn" onclick="testContentAssignment()">Test</button>
+                </div>
+            </div>
+
+            <div class="api-card">
+                <h3>📊 Dashboard & Analytics</h3>
+                <p>Real-time statistics and system monitoring</p>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /api/dashboard/stats</div>
+                    <p>Live dashboard statistics</p>
+                    <button class="btn" onclick="testEndpoint('/api/dashboard/stats')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /api/dashboard/health</div>
+                    <p>System health check</p>
+                    <button class="btn" onclick="testEndpoint('/api/dashboard/health')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">GET /api/dashboard/recent-activity</div>
+                    <p>Recent system activity</p>
+                    <button class="btn" onclick="testEndpoint('/api/dashboard/recent-activity')">Test</button>
+                </div>
+            </div>
+
+            <div class="api-card">
+                <h3>🧠 AI Services</h3>
+                <p>Local AI processing for text analysis and suggestions</p>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">POST /ai/analyze-text</div>
+                    <p>AI text analysis demo</p>
+                    <button class="btn" onclick="testTextAnalysis()">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-url">POST /ai/suggestions</div>
+                    <p>AI-powered suggestions</p>
+                    <button class="btn" onclick="testSuggestions()">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="response-section">
+            <h3>📡 API Response</h3>
+            <div id="response" class="response">Click any "Test" button above to see live API responses...</div>
+        </div>
+    </div>
+
+    <script>
+        let API_BASE = '';
+        
+        // Detect API base URL
+        async function detectAPIBase() {
+            const possibleUrls = [
+                window.location.origin,
+                'https://nnewcoededui.vercel.app',
+                'https://nnewcoededui-git-main-doncitron.vercel.app',
+                'https://d835-2003-f5-cf08-6600-21d4-91f9-844d-e0e6.ngrok-free.app'
+            ];
+            
+            for (const url of possibleUrls) {
+                try {
+                    const response = await fetch(url + '/health', { 
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    if (response.ok) {
+                        API_BASE = url;
+                        document.getElementById('api-url').textContent = url;
+                        return url;
+                    }
+                } catch (e) {
+                    // Continue to next URL
+                }
+            }
+            
+            // Fallback
+            API_BASE = window.location.origin;
+            document.getElementById('api-url').textContent = API_BASE + ' (assumed)';
+            return API_BASE;
+        }
+        
+        async function testEndpoint(endpoint) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch(API_BASE + endpoint, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+                
+                responseDiv.textContent = `GET ${endpoint}\n\nStatus: ${response.status}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                responseDiv.textContent = `Error testing ${endpoint}:\n${error.message}`;
+            }
+        }
+        
+        async function testContentAssignment() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Loading...';
+            
+            try {
+                const data = {
+                    text: "Quarterly financial report with budget analysis and forecasting data",
+                    type: "document",
+                    tags: ["finance", "budget", "quarterly"]
+                };
+                
+                const response = await fetch(API_BASE + '/workspaces/1/assign-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                responseDiv.textContent = `POST /workspaces/1/assign-content\n\nStatus: ${response.status}\n\nRequest:\n${JSON.stringify(data, null, 2)}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                responseDiv.textContent = `Error testing content assignment:\n${error.message}`;
+            }
+        }
+        
+        async function testTextAnalysis() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Loading...';
+            
+            try {
+                const data = {
+                    text: "This is an urgent task that needs immediate attention regarding our quarterly financial reports and budget planning."
+                };
+                
+                const response = await fetch(API_BASE + '/ai/analyze-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                responseDiv.textContent = `POST /ai/analyze-text\n\nStatus: ${response.status}\n\nRequest:\n${JSON.stringify(data, null, 2)}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                responseDiv.textContent = `Error testing AI analysis:\n${error.message}`;
+            }
+        }
+        
+        async function testSuggestions() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Loading...';
+            
+            try {
+                const data = {
+                    context: "workspace",
+                    type: "organization",
+                    data: {
+                        current_files: 15,
+                        workspace_theme: "work",
+                        last_activity: "2024-06-10"
+                    }
+                };
+                
+                const response = await fetch(API_BASE + '/ai/suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                responseDiv.textContent = `POST /ai/suggestions\n\nStatus: ${response.status}\n\nRequest:\n${JSON.stringify(data, null, 2)}\n\nResponse:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                responseDiv.textContent = `Error testing suggestions:\n${error.message}`;
+            }
+        }
+        
+        // Initialize
+        window.onload = async () => {
+            await detectAPIBase();
+            // Test health endpoint on load
+            testEndpoint('/health');
+        };
+    </script>
+</body>
+</html>

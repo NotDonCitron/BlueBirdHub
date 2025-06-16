@@ -1,0 +1,15 @@
+{
+  "name": "@ordnungshub/backend",
+  "version": "0.1.0",
+  "description": "OrdnungsHub Backend API",
+  "scripts": {
+    "start": "cd src && python3 -m uvicorn main_simple:app --host 0.0.0.0 --port 8000",
+    "dev": "cd src && python3 -m uvicorn main_simple:app --reload --port 8000",
+    "test": "cd src && python3 -m pytest",
+    "test:watch": "cd src && python3 -m pytest --watch",
+    "test:coverage": "cd src && python3 -m pytest --cov=. --cov-report=html",
+    "lint": "ruff check .",
+    "format": "ruff format ."
+  },
+  "private": true
+}

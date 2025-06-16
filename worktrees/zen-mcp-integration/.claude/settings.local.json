@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(git worktree:*)",
+      "Bash(git branch:*)",
+      "Bash(mkdir:*)",
+      "Bash(git clone:*)",
+      "Bash(ls:*)",
+      "Bash(./run-server.sh:*)",
+      "Bash(env)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Bash(npm start)",
+      "Bash(pnpm run:*)",
+      "Bash(npm run dev:*)",
+      "Bash(./dev.sh:*)",
+      "Bash(pip install:*)",
+      "Bash(npm install)",
+      "Bash(python3 -m pip:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm test)",
+      "Bash(python -m pytest tests/unit/test_files_api.py -v)",
+      "Bash(python -m pytest tests/unit/test_file_manager.py -v)",
+      "Bash(python3 -m pytest tests/unit/test_files_api.py -v)",
+      "Bash(python3:*)",
+      "Bash(npm run test:react:*)",
+      "Bash(npm run build:react:*)",
+      "Bash(cp:*)",
+      "Bash(npm install:*)"
+    ],
+    "deny": []
+  }
+}

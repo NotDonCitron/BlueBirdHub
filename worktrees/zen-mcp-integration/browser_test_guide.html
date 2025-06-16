@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskManager Browser Test Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8fafc;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-step {
+            background: #f1f5f9;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .expected-result {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            background: white;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checklist li:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+        }
+        .checklist input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            overflow-x: auto;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning-text { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 TaskManager Browser Test Guide</h1>
+        <p>Umfassende Tests für http://localhost:3001/tasks</p>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="completed-tests">0</div>
+                <div>Tests Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="success-rate">0%</div>
+                <div>Success Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-tests">40</div>
+                <div>Total Tests</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Setup & Initial Check</h2>
+        <div class="warning">
+            <strong>Wichtig:</strong> Stelle sicher, dass sowohl Backend (http://localhost:8000) als auch Frontend (http://localhost:3001) laufen.
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Backend läuft:</strong> http://localhost:8000/health zeigt "healthy"</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Frontend läuft:</strong> http://localhost:3001 ist erreichbar</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>TaskManager-Seite laden:</strong> Gehe zu http://localhost:3001/tasks</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Keine Console-Errors:</strong> Öffne Browser-Console (F12) - keine roten Fehler</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Overview Tab Tests</h2>
+        <div class="test-step">
+            <strong>Schritt 1:</strong> Stelle sicher, dass du auf dem "Overview" Tab bist (sollte standardmäßig aktiv sein)
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Progress Section:</strong> "Project Progress" wird angezeigt</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Completion Percentage:</strong> Prozentsatz wird angezeigt (z.B. "66.7%")</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Statistics:</strong> "Done", "In Progress", "Pending" mit Zahlen</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Progress Bar:</strong> Visueller Fortschrittsbalken wird angezeigt</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Next Task Recommendation:</strong> "🎯 Recommended Next Task" Sektion</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>AI Tools:</strong> "Analyze Task Complexity" und "Refresh Data" Buttons</li>
+        </ul>
+        
+        <div class="expected-result">
+            <strong>Erwartetes Ergebnis:</strong> Übersicht zeigt aktuelle Task-Statistiken und nächste empfohlene Aufgabe.
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 All Tasks Tab Tests</h2>
+        <div class="test-step">
+            <strong>Schritt 1:</strong> Klicke auf den "All Tasks" Tab
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task List:</strong> "All Tasks (X)" wird angezeigt mit Anzahl</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Cards:</strong> Individuelle Task-Karten sind sichtbar</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Titles:</strong> Task-Titel wie "Setup Core Application Framework"</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Status Badges:</strong> Farbige Status-Badges ("done", "in-progress", "pending")</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Priority Badges:</strong> Priority-Badges ("high", "medium", "low")</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Workspace Badges:</strong> 🗂️ Workspace-Namen in blauen/grünen Badges</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Selection:</strong> Klicke auf einen Task - Details erscheinen rechts</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Action Buttons:</strong> "Start" oder "Complete" Buttons bei Tasks</li>
+        </ul>
+        
+        <div class="test-step">
+            <strong>Schritt 2:</strong> Teste Task-Interaktionen
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Start Task:</strong> Klicke "Start" bei einem pending Task</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Complete Task:</strong> Klicke "Complete" bei einem in-progress Task</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Expand Task:</strong> Klicke "Expand" bei einem pending Task</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>➕ Add Task Tab Tests</h2>
+        <div class="test-step">
+            <strong>Schritt 1:</strong> Klicke auf den "Add Task" Tab
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Form Elements:</strong> Title-Input, Description-Textarea, Priority-Select</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Workspace Selection:</strong> "🤖 Let AI suggest" ist standardmäßig ausgewählt</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Workspace Options:</strong> 🗂️ Development und 🗂️ Design sind verfügbar</li>
+        </ul>
+        
+        <div class="test-step">
+            <strong>Schritt 2:</strong> Teste AI Workspace Suggestions
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Type Title:</strong> Tippe "Create API documentation" im Title-Feld</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>AI Suggestions:</strong> "🤖 AI Workspace Vorschläge" erscheint automatisch</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Suggestion Details:</strong> Workspace-Name, Confidence-Percentage, Reason</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Click Suggestion:</strong> Klicke auf einen Vorschlag - Workspace wird ausgewählt</li>
+        </ul>
+        
+        <div class="test-step">
+            <strong>Schritt 3:</strong> Erstelle einen neuen Task
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Fill Form:</strong> Title, Description, Priority ausfüllen</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Submit Task:</strong> Klicke "Add Task with AI"</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Success:</strong> Form wird geleert, Task wurde erstellt</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Verify:</strong> Gehe zu "All Tasks" - neuer Task ist sichtbar</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🗂️ Workspaces Tab Tests</h2>
+        <div class="test-step">
+            <strong>Schritt 1:</strong> Klicke auf den "🗂️ Workspaces" Tab
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Section Title:</strong> "🗂️ Tasks by Workspace" wird angezeigt</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Workspace Cards:</strong> Development und Design Workspace-Karten</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Workspace Colors:</strong> Farbige Workspace-Icons/Headers</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Statistics:</strong> "X/Y completed", Completion percentages</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Breakdown:</strong> "Completed", "In Progress", "Pending" mit Zahlen</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Recent Tasks:</strong> Liste der letzten Tasks pro Workspace</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>View All Button:</strong> "View All Tasks" Button bei jedem Workspace</li>
+        </ul>
+        
+        <div class="test-step">
+            <strong>Schritt 2:</strong> Teste Workspace Expansion
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Expand Workspace:</strong> Klicke "View All Tasks" bei Development</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Details:</strong> Vollständige Task-Liste für das Workspace</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Task Cards:</strong> Tasks zeigen Workspace-Zugehörigkeit</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Close View:</strong> "Close" Button funktioniert</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 Dependencies Tab Tests</h2>
+        <div class="test-step">
+            <strong>Schritt 1:</strong> Klicke auf den "Dependencies" Tab
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Tab Loads:</strong> Dependencies Tab lädt ohne Fehler</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Content Display:</strong> Dependency-Visualisierung oder Liste wird angezeigt</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Advanced Features Tests</h2>
+        
+        <div class="test-step">
+            <strong>Performance & Responsiveness:</strong>
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Tab Switching:</strong> Schneller Wechsel zwischen allen Tabs</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Data Loading:</strong> Daten laden innerhalb von 2 Sekunden</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Responsive Design:</strong> Seite funktioniert bei verschiedenen Fenstergrößen</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>No Loading Loops:</strong> Keine endlosen Loading-States</li>
+        </ul>
+        
+        <div class="test-step">
+            <strong>Error Handling:</strong>
+        </div>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Console Clean:</strong> Keine 405, 404, oder 500 Errors in Console</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Network Errors:</strong> Graceful handling wenn Backend kurz nicht erreichbar</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Form Validation:</strong> Leeres Task-Title wird verhindert</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>User Feedback:</strong> Loading-States und Success-Messages</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Browser Compatibility Tests</h2>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Chrome:</strong> Alle Features funktionieren in Chrome</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Firefox:</strong> Alle Features funktionieren in Firefox (optional)</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Safari:</strong> Alle Features funktionieren in Safari (optional)</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎉 Final Validation</h2>
+        
+        <div class="expected-result">
+            <strong>Vollständiger Workflow-Test:</strong>
+        </div>
+        
+        <ol>
+            <li><strong>Overview prüfen</strong> → Task-Statistiken anzeigen</li>
+            <li><strong>Neuen Task erstellen</strong> → AI Workspace-Suggestion nutzen</li>
+            <li><strong>Task in All Tasks finden</strong> → Korrekte Workspace-Zuordnung</li>
+            <li><strong>Task Status ändern</strong> → Von pending zu in-progress</li>
+            <li><strong>Workspace Overview prüfen</strong> → Aktualisierte Statistiken</li>
+            <li><strong>Task komplettieren</strong> → Status auf done setzen</li>
+            <li><strong>Progress Overview</strong> → Erhöhte Completion Rate</li>
+        </ol>
+        
+        <ul class="checklist">
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Complete Workflow:</strong> Gesamter Workflow funktioniert fehlerfrei</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Data Consistency:</strong> Alle Statistiken sind konsistent</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>User Experience:</strong> Intuitive Bedienung und klare Navigation</li>
+            <li><input type="checkbox" onchange="updateStats()"> <strong>Visual Polish:</strong> Ansprechende UI mit korrekten Farben/Icons</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="results-summary">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number success" id="final-completed">0</div>
+                    <div>Tests Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="final-percentage">0%</div>
+                    <div>Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="remaining-tests">40</div>
+                    <div>Remaining</div>
+                </div>
+            </div>
+            
+            <div id="final-result" style="margin-top: 20px; padding: 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2rem;">
+                <!-- Final result will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateStats() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const totalTests = checkboxes.length;
+            const completedTests = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const successRate = Math.round((completedTests / totalTests) * 100);
+            const remaining = totalTests - completedTests;
+            
+            // Update header stats
+            document.getElementById('completed-tests').textContent = completedTests;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            document.getElementById('total-tests').textContent = totalTests;
+            
+            // Update final stats
+            document.getElementById('final-completed').textContent = completedTests;
+            document.getElementById('final-percentage').textContent = successRate + '%';
+            document.getElementById('remaining-tests').textContent = remaining;
+            
+            // Update final result
+            const finalResult = document.getElementById('final-result');
+            if (successRate === 100) {
+                finalResult.innerHTML = '🎉 PERFECT SCORE! TaskManager ist vollständig funktional!';
+                finalResult.style.background = '#f0fdf4';
+                finalResult.style.color = '#166534';
+                finalResult.style.border = '2px solid #22c55e';
+            } else if (successRate >= 90) {
+                finalResult.innerHTML = '✨ EXCELLENT! TaskManager funktioniert sehr gut!';
+                finalResult.style.background = '#fefce8';
+                finalResult.style.color = '#854d0e';
+                finalResult.style.border = '2px solid #eab308';
+            } else if (successRate >= 75) {
+                finalResult.innerHTML = '👍 GOOD! TaskManager ist größtenteils funktional!';
+                finalResult.style.background = '#eff6ff';
+                finalResult.style.color = '#1e40af';
+                finalResult.style.border = '2px solid #3b82f6';
+            } else if (successRate >= 50) {
+                finalResult.innerHTML = '⚠️ NEEDS WORK! Einige Features funktionieren nicht korrekt.';
+                finalResult.style.background = '#fef3c7';
+                finalResult.style.color = '#92400e';
+                finalResult.style.border = '2px solid #f59e0b';
+            } else {
+                finalResult.innerHTML = '❌ MAJOR ISSUES! TaskManager braucht erhebliche Reparaturen.';
+                finalResult.style.background = '#fef2f2';
+                finalResult.style.color = '#991b1b';
+                finalResult.style.border = '2px solid #ef4444';
+            }
+        }
+        
+        // Initialize stats
+        updateStats();
+    </script>
+</body>
+</html>

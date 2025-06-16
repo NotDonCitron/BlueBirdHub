@@ -1,0 +1,5 @@
+This is a test file for upload progress tracking functionality.
+It contains multiple lines to test the file content preview.
+The file operations system is working great!
+Line 4
+Line 5

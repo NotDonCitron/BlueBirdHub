@@ -2711,7 +2711,7 @@ const Tasks: React.FC<{ errorHandler: ReturnType<typeof useErrorHandler> }> = ({
       {reorderMode && (
         <div style={{
           background: '#f3e8ff',
-          border: '2px solid '#8b5cf6',
+          border: '2px solid #8b5cf6',
           borderRadius: '8px',
           padding: '15px',
           marginBottom: '20px'

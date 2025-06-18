@@ -777,10 +777,10 @@ class CORSHandler(BaseHTTPRequestHandler):
         pass
 
 if __name__ == "__main__":
-    print("🚀 Starting ULTRA SIMPLE OrdnungsHub Backend...")
-    print("📍 Backend running at: http://localhost:8000")
-    print("✅ CORS enabled for all origins")
-    print("🔧 No dependencies required!")
+    print("Starting ULTRA SIMPLE OrdnungsHub Backend...")
+    print("Backend running at: http://localhost:8000")
+    print("CORS enabled for all origins")
+    print("No dependencies required!")
     print("")
     
     server = HTTPServer(('localhost', 8000), CORSHandler)

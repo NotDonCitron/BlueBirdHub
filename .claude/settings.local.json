@@ -78,7 +78,9 @@
       "Bash(cat:*)",
       "Bash(gcc:*)",
       "Bash(rustc --version)",
-      "Bash(go:*)"
+      "Bash(go:*)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)"
     ],
     "deny": []
   }

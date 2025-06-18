@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "total_functions": 0,
+    "functions_with_tests": 0,
+    "test_coverage": 0.0,
+    "complex_functions": 0,
+    "async_functions": 0
+  },
+  "untested_functions": [],
+  "high_risk_functions": [],
+  "recommendations": [
+    "Increase test coverage to at least 80% for production readiness"
+  ]
+}

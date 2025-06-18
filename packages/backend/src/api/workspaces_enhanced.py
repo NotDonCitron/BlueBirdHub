@@ -4,8 +4,8 @@ Enhanced AI-powered content assignment functions for workspaces
 
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
-from src.backend.models.workspace import Workspace
-from src.backend.services.ai_service import ai_service
+from models.workspace import Workspace
+from services.ai_service import ai_service
 
 
 async def get_workspace_template_context(workspace: Workspace, db: Session) -> Dict[str, Any]:

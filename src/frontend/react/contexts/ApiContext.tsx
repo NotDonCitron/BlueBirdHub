@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { API_CONFIG, getApiUrl } from '../config/api';
 
 type ApiStatus = 'connected' | 'disconnected' | 'checking';
 
@@ -35,8 +36,8 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
         // Use Electron API
         return await (window as any).electronAPI.apiRequest(endpoint, method, data);
       } else {
-        // Fallback for development in browser
-        const url = `http://127.0.0.1:8001${endpoint}`;
+        // Use configured API URL (works in both dev and production)
+        const url = getApiUrl(endpoint);
         const options: RequestInit = {
           method,
           headers: {

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
+import ErrorDashboard from './components/ErrorDashboard';
+import PerformanceDashboard from './components/PerformanceDashboard';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ApiProvider } from './contexts/ApiContext';
+import { performanceMonitor } from './utils/performanceMonitor';
 import './styles/App.css';
 
 const App: React.FC = () => {
@@ -12,6 +16,13 @@ const App: React.FC = () => {
   useEffect(() => {
     // Check API connection on startup
     checkApiConnection();
+    
+    // Start performance monitoring
+    performanceMonitor.startContinuousMonitoring();
+    
+    return () => {
+      performanceMonitor.dispose();
+    };
   }, []);
 
   const checkApiConnection = async () => {
@@ -29,7 +40,7 @@ const App: React.FC = () => {
         }
       } else {
         // Fallback for development in browser
-        const response = await fetch('http://127.0.0.1:8001/');
+        const response = await fetch('http://127.0.0.1:8000/');
         const data = await response.json();
         if (data.status === 'running') {
           setApiStatus('connected');
@@ -55,15 +66,19 @@ const App: React.FC = () => {
   }
 
   return (
-    <Router>
-      <ThemeProvider>
-        <ApiProvider apiStatus={apiStatus} onRetryConnection={checkApiConnection}>
-          <div className="app">
-            <Layout />
-          </div>
-        </ApiProvider>
-      </ThemeProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <ThemeProvider>
+          <ApiProvider apiStatus={apiStatus} onRetryConnection={checkApiConnection}>
+            <div className="app">
+              <Layout />
+              <ErrorDashboard />
+              <PerformanceDashboard />
+            </div>
+          </ApiProvider>
+        </ThemeProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 

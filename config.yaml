@@ -1,0 +1,30 @@
+# Konfiguration für den Zen MCP Server
+
+# Definiert die verschiedenen LLM-Anbieter und die dazugehörigen API-Schlüssel.
+# Der Schlüssel wird aus den Umgebungsvariablen geladen, um ihn nicht direkt in die Datei zu schreiben.
+# Stelle sicher, dass du diese Variablen gesetzt hast (z.B. in einer .env Datei oder im System).
+providers:
+  - name: "anthropic"
+    api_key: "${ANTHROPIC_API_KEY}" # Liest den Schlüssel aus der Umgebungsvariable
+  - name: "openai"
+    api_key: "${OPENAI_API_KEY}"
+  - name: "google"
+    api_key: "${GOOGLE_API_KEY}"
+
+# Definiert die spezifischen Modelle, die wir nutzen wollen.
+# Jedes Modell wird einem Anbieter zugeordnet.
+models:
+  # Unser primäres, hochintelligentes Modell für komplexe Aufgaben
+  - name: "claude-code"
+    provider: "anthropic"
+    model_id: "claude-3-opus-20240229" # Der exakte Modellname von Anthropic
+
+  # Ein schnelles, günstiges Modell für einfache Anfragen
+  - name: "gemini-fast"
+    provider: "google"
+    model_id: "gemini-1.5-pro-latest"
+
+  # Unser Fallback- oder Kreativ-Modell
+  - name: "gpt-creative"
+    provider: "openai"
+    model_id: "gpt-4-turbo"

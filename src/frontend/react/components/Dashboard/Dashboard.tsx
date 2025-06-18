@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
       // Try to load real data from the API
       if (makeApiRequest) {
         try {
-          const response = await makeApiRequest('/api/dashboard/stats');
+          const response = await makeApiRequest('/dashboard/stats');
           if (response.success && response.stats) {
             setStats({
               totalTasks: response.stats.total_tasks,

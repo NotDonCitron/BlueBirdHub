@@ -2,9 +2,9 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from datetime import datetime, timedelta
-from src.backend.crud.base import CRUDBase
-from src.backend.models.task import Task, Project, TaskStatus, TaskPriority
-from src.backend.schemas.task import TaskCreate, TaskUpdate, ProjectCreate, ProjectUpdate
+from .base import CRUDBase
+from models.task import Task, Project, TaskStatus, TaskPriority
+from schemas.task import TaskCreate, TaskUpdate, ProjectCreate, ProjectUpdate
 
 class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
     def get_by_user(

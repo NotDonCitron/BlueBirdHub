@@ -8,8 +8,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
-from src.backend.services.ai_service import ai_service
-from src.backend.services.enhanced_ai_service import enhanced_ai_service
+from services.ai_service import ai_service
+from services.enhanced_ai_service import enhanced_ai_service
 # from src.backend.services.file_scanner import file_scanner
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -359,3 +359,107 @@ class CleanupRequest(BaseModel):
 #     except Exception as e:
 #         logger.error(f"Error in cleanup: {e}")
 #         raise HTTPException(status_code=500, detail=f"Cleanup failed: {str(e)}")
+
+# Workspace Suggestion Endpoints
+
+class WorkspaceSuggestionRequest(BaseModel):
+    task_title: str
+    task_description: str
+    existing_workspaces: Optional[List[Dict[str, Any]]] = []
+
+class WorkspaceSuggestionResponse(BaseModel):
+    suggestions: List[Dict[str, Any]]
+    reasoning: str
+
+@router.post("/suggest-workspaces", response_model=WorkspaceSuggestionResponse)
+async def suggest_workspaces(request: WorkspaceSuggestionRequest):
+    """
+    Generate AI-powered workspace suggestions based on task content
+    """
+    try:
+        if not request.task_title.strip():
+            raise HTTPException(status_code=400, detail="Task title cannot be empty")
+        
+        # Combine task title and description for analysis
+        full_text = f"{request.task_title}. {request.task_description or ''}"
+        
+        # Analyze the task content
+        analysis = await ai_service.analyze_text(full_text)
+        
+        # Extract keywords and category for workspace suggestions
+        keywords = analysis.get("keywords", [])
+        category = analysis.get("category", "general")
+        
+        # Generate workspace suggestions based on analysis
+        suggestions = []
+        
+        # Technology-based suggestions
+        tech_keywords = ["python", "javascript", "react", "api", "database", "frontend", "backend", "docker", "ci/cd"]
+        found_tech = [kw for kw in keywords if any(tech in kw.lower() for tech in tech_keywords)]
+        
+        if found_tech:
+            suggestions.append({
+                "name": f"{category.title()} Development",
+                "description": f"Workspace for {', '.join(found_tech[:3])} development tasks",
+                "color": "#3b82f6",
+                "theme": "modern_light",
+                "icon": "💻",
+                "reasoning": f"Detected technology keywords: {', '.join(found_tech[:3])}"
+            })
+        
+        # Project-based suggestions
+        if "project" in request.task_title.lower() or "feature" in request.task_title.lower():
+            suggestions.append({
+                "name": f"{request.task_title.split()[0]} Project",
+                "description": f"Dedicated workspace for {request.task_title.lower()} related tasks",
+                "color": "#10b981",
+                "theme": "modern_light",
+                "icon": "🚀",
+                "reasoning": "Detected project-oriented task structure"
+            })
+        
+        # Domain-specific suggestions based on category
+        category_map = {
+            "development": {"name": "Development Hub", "icon": "⚡", "color": "#8b5cf6"},
+            "documentation": {"name": "Documentation Center", "icon": "📚", "color": "#f59e0b"},
+            "testing": {"name": "Quality Assurance", "icon": "🧪", "color": "#ef4444"},
+            "design": {"name": "Design Studio", "icon": "🎨", "color": "#ec4899"},
+            "planning": {"name": "Strategy & Planning", "icon": "📋", "color": "#6366f1"}
+        }
+        
+        if category in category_map:
+            cat_info = category_map[category]
+            suggestions.append({
+                "name": cat_info["name"],
+                "description": f"Centralized workspace for all {category} activities",
+                "color": cat_info["color"],
+                "theme": "modern_light",
+                "icon": cat_info["icon"],
+                "reasoning": f"Task categorized as {category}-related"
+            })
+        
+        # Generic fallback suggestion
+        if not suggestions:
+            suggestions.append({
+                "name": "General Tasks",
+                "description": "Multi-purpose workspace for various tasks",
+                "color": "#6b7280",
+                "theme": "modern_light",
+                "icon": "📁",
+                "reasoning": "Default workspace for general task management"
+            })
+        
+        # Limit to top 3 suggestions
+        suggestions = suggestions[:3]
+        
+        reasoning = f"Generated {len(suggestions)} workspace suggestions based on task content analysis. "
+        reasoning += f"Key factors: category ({category}), keywords ({', '.join(keywords[:3])})"
+        
+        return WorkspaceSuggestionResponse(
+            suggestions=suggestions,
+            reasoning=reasoning
+        )
+        
+    except Exception as e:
+        logger.error(f"Error suggesting workspaces: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to suggest workspaces: {str(e)}")

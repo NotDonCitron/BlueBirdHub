@@ -246,7 +246,7 @@ const FileManager: React.FC = () => {
     };
 
     processFiles();
-  }, [files, sortBy, sortOrder, groupBy, groupFiles]);
+  }, [files, sortBy, sortOrder, groupBy]);
 
   const parseSize = (sizeStr: string): number => {
     const match = sizeStr.match(/(\d+(?:\.\d+)?)\s*(KB|MB|GB)/i);

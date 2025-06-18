@@ -1,0 +1,105 @@
+{
+  "name": "Comprehensive Testing Workflow",
+  "version": "1.0.0",
+  "description": "Automatically generate and execute tests for every function in the codebase",
+  "orchestrator": {
+    "model": "claude-3-opus-20240229",
+    "maxIterations": 20,
+    "confidenceThreshold": 0.90,
+    "testCoverageTarget": 100
+  },
+  "stages": [
+    {
+      "name": "discovery",
+      "description": "Scan codebase and identify all functions",
+      "actions": [
+        "scan_python_functions",
+        "scan_javascript_functions",
+        "scan_typescript_functions",
+        "create_function_inventory"
+      ]
+    },
+    {
+      "name": "analysis",
+      "description": "Analyze each function for testability",
+      "actions": [
+        "identify_parameters",
+        "determine_return_types",
+        "detect_side_effects",
+        "find_dependencies"
+      ]
+    },
+    {
+      "name": "test_generation",
+      "description": "Generate comprehensive tests for each function",
+      "actions": [
+        "create_unit_tests",
+        "create_edge_case_tests",
+        "create_error_tests",
+        "create_integration_tests"
+      ]
+    },
+    {
+      "name": "execution",
+      "description": "Run all generated tests",
+      "actions": [
+        "run_python_tests",
+        "run_javascript_tests",
+        "collect_coverage",
+        "identify_failures"
+      ]
+    },
+    {
+      "name": "remediation",
+      "description": "Fix failing tests and improve coverage",
+      "actions": [
+        "analyze_failures",
+        "fix_broken_functions",
+        "add_missing_tests",
+        "optimize_test_performance"
+      ]
+    }
+  ],
+  "testPatterns": {
+    "python": {
+      "frameworks": ["pytest", "unittest"],
+      "testTypes": [
+        "happy_path",
+        "edge_cases",
+        "error_handling",
+        "type_validation",
+        "boundary_conditions"
+      ]
+    },
+    "javascript": {
+      "frameworks": ["jest", "mocha"],
+      "testTypes": [
+        "unit",
+        "async_handling",
+        "error_scenarios",
+        "dom_interaction",
+        "state_management"
+      ]
+    },
+    "typescript": {
+      "frameworks": ["jest", "vitest"],
+      "testTypes": [
+        "type_safety",
+        "interface_compliance",
+        "generic_handling",
+        "decorator_testing"
+      ]
+    }
+  },
+  "qualityGates": {
+    "coverage": {
+      "functions": 100,
+      "lines": 95,
+      "branches": 90
+    },
+    "performance": {
+      "maxTestDuration": 30000,
+      "parallelization": true
+    }
+  }
+}

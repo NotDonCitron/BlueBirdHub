@@ -18,9 +18,9 @@ import time
 from sqlalchemy.orm import Session
 from loguru import logger
 
-from src.backend.database.database import SessionLocal
-from src.backend.crud.crud_file import file_metadata as crud_file
-from src.backend.schemas.file_metadata import FileMetadataCreate
+from database.database import SessionLocal
+from crud.crud_file import file_metadata as crud_file
+from schemas.file_metadata import FileMetadataCreate
 from .enhanced_ai_service import enhanced_ai_service
 
 

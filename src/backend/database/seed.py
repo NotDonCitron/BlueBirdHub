@@ -119,7 +119,8 @@ def create_demo_user(db: Session) -> User:
         email="demo@example.com",
         is_active=True
     )
-    demo_user = crud_user.create(db, obj_in=user_data)
+    user = User(**user_data.dict())
+    db.add(user)
     
     # Create user preferences
     preferences = [
@@ -132,14 +133,14 @@ def create_demo_user(db: Session) -> User:
     
     for pref in preferences:
         user_pref = UserPreference(
-            user_id=demo_user.id,
+            user_id=user.id,
             preference_key=pref["preference_key"],
             preference_value=pref["preference_value"]
         )
         db.add(user_pref)
     
     db.commit()
-    return demo_user
+    return user
 
 def create_demo_workspaces(db: Session, user: User):
     """Create demo workspaces"""
@@ -184,8 +185,8 @@ def create_demo_workspaces(db: Session, user: User):
     
     for ws_data in workspaces_data:
         ws_data["user_id"] = user.id
-        workspace_create = WorkspaceCreate(**ws_data)
-        workspace = crud_workspace.create(db, obj_in=workspace_create)
+        workspace = Workspace(**ws_data, owner_id=user.id)
+        db.add(workspace)
         
         # Mark as accessed recently
         workspace.last_accessed_at = datetime.now(timezone.utc) - timedelta(
@@ -225,8 +226,8 @@ def create_demo_projects_and_tasks(db: Session, user: User):
         # Convert datetime objects to avoid serialization issues
         if "start_date" in proj_data:
             proj_data["start_date"] = proj_data["start_date"]
-        project_create = ProjectCreate(**proj_data)
-        project = crud_project.create(db, obj_in=project_create)
+        project = Project(**proj_data, workspace_id=work_workspace.id)
+        db.add(project)
         created_projects.append(project)
     
     # Create tasks
@@ -295,8 +296,8 @@ def create_demo_projects_and_tasks(db: Session, user: User):
     
     for task_data in tasks_data:
         task_data["user_id"] = user.id
-        task_create = TaskCreate(**task_data)
-        crud_task.create(db, obj_in=task_create)
+        task = Task(**task_data)
+        db.add(task)
     
     db.commit()
 

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from src.backend.database.database import Base
+from database.database import Base
 
 class Workspace(Base):
     __tablename__ = "workspaces"

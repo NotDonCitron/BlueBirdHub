@@ -12,6 +12,7 @@ from src.backend.api.tasks import router as tasks_router
 from src.backend.api.dashboard import router as dashboard_router
 from src.backend.api.files import router as files_router
 from src.backend.api.file_management import router as file_management_router
+from src.backend.api.collaboration import router as collaboration_router
 
 # Configure logger
 logger.add("logs/ordnungshub.log", rotation="10 MB")
@@ -65,6 +66,7 @@ app.include_router(tasks_router)
 app.include_router(dashboard_router)
 app.include_router(files_router)
 app.include_router(file_management_router)
+app.include_router(collaboration_router)
 
 @app.get("/")
 async def read_root():

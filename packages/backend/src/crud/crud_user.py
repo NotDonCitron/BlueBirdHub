@@ -1,8 +1,8 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from src.backend.crud.base import CRUDBase
-from src.backend.models.user import User, UserPreference
-from src.backend.schemas.user import UserCreate, UserUpdate, UserPreferenceCreate, UserPreferenceUpdate
+from .base import CRUDBase
+from models.user import User, UserPreference
+from schemas.user import UserCreate, UserUpdate, UserPreferenceCreate, UserPreferenceUpdate
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_username(self, db: Session, *, username: str) -> Optional[User]:

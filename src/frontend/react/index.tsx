@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App';
+import SimpleApp from './SimpleApp';
 import './styles/global.css';
 import './utils/errorLogger';
 
@@ -14,6 +14,6 @@ if (!container) {
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <App />
+    <SimpleApp />
   </React.StrictMode>
 );

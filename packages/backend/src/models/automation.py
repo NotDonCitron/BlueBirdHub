@@ -3,7 +3,7 @@ Automation models for OrdnungsHub
 """
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, JSON
 from sqlalchemy.sql import func
-from src.backend.database.database import Base
+from database.database import Base
 
 class Automation(Base):
     __tablename__ = "automations"

@@ -1,0 +1,156 @@
+{
+  "name": "Claude Code Flow - Hybrid Autonomous Development",
+  "version": "1.0.0",
+  "description": "Recursive autonomous development with human strategic checkpoints",
+  "orchestrator": {
+    "model": "claude-3-opus-20240229",
+    "maxIterations": 10,
+    "confidenceThreshold": 0.85,
+    "humanCheckpointThreshold": 0.95
+  },
+  "agents": {
+    "code-flow": {
+      "model": "claude-3-sonnet-20240229",
+      "role": "Primary code generation and editing with delta-aware patches",
+      "capabilities": [
+        "multi-file-editing",
+        "delta-patches",
+        "test-awareness",
+        "import-management"
+      ],
+      "triggers": ["new-feature", "refactor", "bug-fix"]
+    },
+    "tdd-runner": {
+      "model": "claude-3-sonnet-20240229",
+      "role": "Test generation, execution, and coverage analysis",
+      "capabilities": [
+        "jest-integration",
+        "pytest-integration",
+        "coverage-reporting",
+        "test-generation"
+      ],
+      "triggers": ["code-change", "new-function", "refactor-complete"]
+    },
+    "security-scanner": {
+      "model": "claude-3-sonnet-20240229",
+      "role": "Security vulnerability detection and remediation",
+      "capabilities": [
+        "owasp-scanning",
+        "dependency-check",
+        "secret-detection",
+        "auth-validation"
+      ],
+      "triggers": ["auth-code", "api-endpoint", "data-handling"]
+    },
+    "performance-optimizer": {
+      "model": "claude-3-haiku-20240307",
+      "role": "Performance analysis and optimization",
+      "capabilities": [
+        "profiling",
+        "bottleneck-detection",
+        "caching-strategies",
+        "query-optimization"
+      ],
+      "triggers": ["performance-issue", "scale-requirement"]
+    },
+    "doc-writer": {
+      "model": "claude-3-haiku-20240307",
+      "role": "Documentation generation and maintenance",
+      "capabilities": [
+        "api-docs",
+        "readme-updates",
+        "inline-comments",
+        "architecture-diagrams"
+      ],
+      "triggers": ["feature-complete", "api-change", "public-interface"]
+    },
+    "critic": {
+      "model": "claude-3-opus-20240229",
+      "role": "Code review and quality assurance",
+      "capabilities": [
+        "pattern-analysis",
+        "best-practices",
+        "maintainability",
+        "architectural-review"
+      ],
+      "triggers": ["pr-ready", "major-refactor", "architecture-change"]
+    }
+  },
+  "workflows": {
+    "feature-development": {
+      "stages": [
+        "requirements-analysis",
+        "task-decomposition",
+        "implementation-cycles",
+        "testing-validation",
+        "security-review",
+        "documentation",
+        "final-review"
+      ],
+      "humanCheckpoints": [
+        "requirements-approval",
+        "architecture-decisions",
+        "security-critical-code",
+        "api-breaking-changes"
+      ]
+    },
+    "bug-fix": {
+      "stages": [
+        "reproduce-issue",
+        "root-cause-analysis",
+        "fix-implementation",
+        "regression-testing",
+        "documentation-update"
+      ],
+      "humanCheckpoints": [
+        "root-cause-confirmation",
+        "production-hotfix"
+      ]
+    },
+    "refactoring": {
+      "stages": [
+        "current-state-analysis",
+        "improvement-planning",
+        "incremental-refactor",
+        "test-maintenance",
+        "performance-validation"
+      ],
+      "humanCheckpoints": [
+        "refactor-strategy",
+        "api-compatibility"
+      ]
+    }
+  },
+  "qualityGates": {
+    "testCoverage": {
+      "minimum": 85,
+      "criticalPaths": 95
+    },
+    "security": {
+      "vulnerabilities": 0,
+      "dependencyRisk": "low"
+    },
+    "performance": {
+      "regression": 5,
+      "targetMetrics": {
+        "api-response": "200ms",
+        "ui-render": "16ms"
+      }
+    }
+  },
+  "projectSpecific": {
+    "ordnungshub": {
+      "focusAreas": [
+        "file-organization",
+        "ai-categorization",
+        "electron-performance",
+        "react-optimization"
+      ],
+      "constraints": [
+        "maintain-electron-compatibility",
+        "preserve-fastapi-structure",
+        "respect-ai-service-patterns"
+      ]
+    }
+  }
+}

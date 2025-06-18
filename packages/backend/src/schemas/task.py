@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from src.backend.models.task import TaskStatus, TaskPriority
+from models.task import TaskStatus, TaskPriority
 
 # Task Schemas
 class TaskBase(BaseModel):

@@ -4,9 +4,9 @@ Automation API endpoints for OrdnungsHub
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from src.backend.database.database import get_db
-from src.backend.models.automation import Automation, AutomationLog
-from src.backend.schemas.automation import AutomationCreate, AutomationUpdate, AutomationResponse
+from database.database import get_db
+from models.automation import Automation, AutomationLog
+from schemas.automation import AutomationCreate, AutomationUpdate, AutomationResponse
 import logging
 
 logger = logging.getLogger(__name__)

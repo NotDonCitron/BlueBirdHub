@@ -329,6 +329,16 @@ export const WorkspaceManager: React.FC = () => {
     return date.toLocaleDateString();
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Path copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy text: ', error);
+      alert('Failed to copy to clipboard. The document may not be focused.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="workspace-manager">
@@ -379,11 +389,7 @@ export const WorkspaceManager: React.FC = () => {
                   <div className="workspace-actions">
                     <button 
                       className="btn btn-sm btn-secondary"
-                      onClick={() => {
-                        // Copy path to clipboard
-                        navigator.clipboard.writeText(workspace.workspace_path);
-                        alert('Path copied to clipboard!');
-                      }}
+                      onClick={() => copyToClipboard(workspace.workspace_path)}
                     >
                       📋 Copy Path
                     </button>

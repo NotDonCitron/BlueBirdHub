@@ -835,3 +835,191 @@ async def get_workspace_files(
             "files": [],
             "total": 0
         }
+
+@router.get("/{workspace_id}/detail")
+async def get_workspace_detail(workspace_id: int, db: Session = Depends(get_db)):
+    """
+    Get comprehensive workspace details including tasks, files, and analytics
+    """
+    try:
+        # Get workspace basic info
+        workspace = crud_workspace.get(db, id=workspace_id)
+        if not workspace:
+            raise HTTPException(status_code=404, detail="Workspace not found")
+        
+        # Get tasks for this workspace
+        from crud.crud_task import task as crud_task
+        from models.task import Task
+        from sqlalchemy import and_, func as sql_func
+        
+        try:
+            tasks = crud_task.get_by_workspace(db, workspace_id=workspace_id, skip=0, limit=100)
+        except AttributeError:
+            # Fallback if method doesn't exist
+            tasks = db.query(Task).filter(Task.workspace_id == workspace_id).all()
+        
+        # Get files for this workspace
+        from crud.crud_file import file_metadata as crud_file
+        
+        try:
+            files = crud_file.get_by_workspace(db, workspace_id=workspace_id, skip=0, limit=100)
+        except AttributeError:
+            # Fallback if method doesn't exist
+            from models.file_metadata import FileMetadata
+            files = db.query(FileMetadata).filter(FileMetadata.workspace_id == workspace_id).all()
+        
+        # Calculate workspace statistics
+        from datetime import datetime, timedelta
+        
+        # Task statistics
+        total_tasks = len(tasks)
+        completed_tasks = len([t for t in tasks if t.status == 'completed' or t.status == 'done'])
+        in_progress_tasks = len([t for t in tasks if t.status == 'in-progress'])
+        pending_tasks = len([t for t in tasks if t.status == 'pending'])
+        
+        completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+        
+        # File statistics
+        total_files = len(files)
+        file_types = {}
+        total_size = 0
+        
+        for file in files:
+            file_type = file.file_type or 'unknown'
+            file_types[file_type] = file_types.get(file_type, 0) + 1
+            total_size += file.size or 0
+        
+        # Recent activity (last 7 days)
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        recent_tasks = [t for t in tasks if t.created_at and t.created_at >= seven_days_ago]
+        recent_files = [f for f in files if f.created_at and f.created_at >= seven_days_ago]
+        
+        # AI-powered workspace insights
+        workspace_context = f"""
+        Workspace: {workspace.name}
+        Description: {workspace.description or 'No description'}
+        Theme: {workspace.theme}
+        Total tasks: {total_tasks}
+        Completed tasks: {completed_tasks}
+        Completion rate: {completion_rate:.1f}%
+        Total files: {total_files}
+        File types: {', '.join(file_types.keys()) if file_types else 'None'}
+        """
+        
+        try:
+            analysis = await ai_service.analyze_text(workspace_context)
+            ai_insights = {
+                "productivity_score": min(100, completion_rate + 20),
+                "category": analysis.get("category", "general"),
+                "sentiment": analysis.get("sentiment", {}).get("label", "neutral"),
+                "keywords": analysis.get("keywords", []),
+                "suggestions": []
+            }
+            
+            # Generate AI suggestions
+            if completion_rate < 50:
+                ai_insights["suggestions"].append("Consider reorganizing tasks by priority")
+            if total_files > 20 and len(file_types) > 5:
+                ai_insights["suggestions"].append("Files could benefit from better organization")
+            if in_progress_tasks > completed_tasks:
+                ai_insights["suggestions"].append("Focus on completing existing tasks")
+            
+        except Exception as ai_error:
+            logger.warning(f"AI analysis failed: {ai_error}")
+            ai_insights = {
+                "productivity_score": 50,
+                "category": "general",
+                "sentiment": "neutral",
+                "keywords": [],
+                "suggestions": ["AI analysis temporarily unavailable"]
+            }
+        
+        # Format tasks for frontend
+        task_data = []
+        for task in tasks[:10]:  # Limit to 10 most recent
+            task_data.append({
+                "id": str(task.id),
+                "title": task.title,
+                "description": task.description or "",
+                "status": task.status,
+                "priority": task.priority,
+                "created_at": task.created_at.isoformat() if task.created_at else "",
+                "updated_at": task.updated_at.isoformat() if task.updated_at else "",
+                "due_date": task.due_date.isoformat() if hasattr(task, 'due_date') and task.due_date else None
+            })
+        
+        # Format files for frontend
+        file_data = []
+        for file in files[:10]:  # Limit to 10 most recent
+            file_data.append({
+                "id": str(file.id),
+                "name": file.name,
+                "type": file.file_type or "unknown",
+                "size": file.size or 0,
+                "size_formatted": f"{(file.size or 0) / 1024:.1f} KB" if file.size else "0 KB",
+                "created_at": file.created_at.isoformat() if file.created_at else "",
+                "updated_at": file.updated_at.isoformat() if file.updated_at else "",
+                "category": file.user_category or file.ai_category or "Other",
+                "priority": file.priority or "normal"
+            })
+        
+        return {
+            "workspace": {
+                "id": workspace.id,
+                "name": workspace.name,
+                "description": workspace.description,
+                "theme": workspace.theme,
+                "color": workspace.color,
+                "created_at": workspace.created_at.isoformat() if workspace.created_at else "",
+                "updated_at": workspace.updated_at.isoformat() if workspace.updated_at else "",
+                "last_accessed_at": workspace.last_accessed_at.isoformat() if workspace.last_accessed_at else "",
+                "layout_config": workspace.layout_config or {}
+            },
+            "statistics": {
+                "tasks": {
+                    "total": total_tasks,
+                    "completed": completed_tasks,
+                    "in_progress": in_progress_tasks,
+                    "pending": pending_tasks,
+                    "completion_rate": round(completion_rate, 1)
+                },
+                "files": {
+                    "total": total_files,
+                    "total_size": total_size,
+                    "total_size_formatted": f"{total_size / (1024*1024):.1f} MB" if total_size > 0 else "0 MB",
+                    "types": file_types
+                },
+                "activity": {
+                    "recent_tasks": len(recent_tasks),
+                    "recent_files": len(recent_files),
+                    "last_activity": max(
+                        [t.updated_at for t in tasks if t.updated_at] + 
+                        [f.updated_at for f in files if f.updated_at] + 
+                        [datetime.min]
+                    ).isoformat() if (tasks or files) else None
+                }
+            },
+            "tasks": task_data,
+            "files": file_data,
+            "ai_insights": ai_insights,
+            "recommendations": [
+                {
+                    "type": "productivity",
+                    "title": "High Productivity" if completion_rate > 70 else "Room for Improvement",
+                    "description": "Great work!" if completion_rate > 70 else "Consider prioritizing task completion",
+                    "priority": "low" if completion_rate > 70 else "medium"
+                },
+                {
+                    "type": "organization",
+                    "title": "File Organization",
+                    "description": "Files are well organized" if len(file_types) <= 3 else "Consider organizing files by type",
+                    "priority": "low" if len(file_types) <= 3 else "medium"
+                }
+            ]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching workspace detail {workspace_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch workspace detail: {str(e)}")

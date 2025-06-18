@@ -44,6 +44,9 @@ coverage.xml
 .git/
 .gitignore
 
+# Git worktrees (can cause build issues on Windows)
+worktrees/
+
 # Documentation
 docs/
 README.md

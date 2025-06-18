@@ -15,14 +15,14 @@ try:
 except ImportError:
     PILLOW_AVAILABLE = False
 
-from src.backend.database.database import get_db
-from src.backend.crud.crud_file import file_metadata as crud_file, tag as crud_tag
-from src.backend.schemas.file_metadata import (
+from database.database import get_db
+from crud.crud_file import file_metadata as crud_file, tag as crud_tag
+from schemas.file_metadata import (
     FileMetadata, FileMetadataCreate, FileMetadataUpdate, FileMetadataResponse,
     FileSearchResponse, FileStatsResponse, FileCategoryStats,
     Tag, TagCreate, TagUpdate
 )
-from src.backend.services.ai_service import ai_service
+from services.ai_service import ai_service
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -325,7 +325,7 @@ async def process_file_async(file_id: int, file_path: str, user_id: int):
     - Content extraction for searchability
     """
     try:
-        from src.backend.database.database import SessionLocal
+        from database.database import SessionLocal
         db = SessionLocal()
         
         # Get file from database

@@ -32,7 +32,7 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
     apiClientRef.current = new ApiClient({
       baseUrl: 'http://127.0.0.1:8000',
       timeout: 15000,
-      retries: 2
+      retries: 3
     });
 
     return () => {

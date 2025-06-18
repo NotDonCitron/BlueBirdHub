@@ -1,6 +1,10 @@
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/__tests__/**/*.test.js'],
+  testMatch: [
+    '**/tests/unit/**/*.test.js',
+    '**/tests/integration/**/*.test.js',
+    '**/__tests__/**/*.test.js'
+  ],
   testPathIgnorePatterns: ['/node_modules/'],
   collectCoverage: false,
   verbose: true,
@@ -14,4 +18,12 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
+  // Add Babel runtime configuration
+  // Removed setupFilesAfterEnv to resolve configuration error
+  globals: {
+    'ts-jest': {
+      tsConfig: 'tsconfig.json',
+      babelConfig: true
+    }
+  }
 };

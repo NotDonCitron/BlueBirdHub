@@ -8,11 +8,11 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 from datetime import datetime
 
-from src.backend.database.database import get_db
-from src.backend.models.task import Task, TaskStatus, TaskPriority, Project
-from src.backend.schemas.task import TaskCreate, TaskUpdate, TaskResponse
-from src.backend.services.taskmaster_integration import taskmaster_service
-from src.backend.services.ai_service import ai_service
+from database.database import get_db
+from models.task import Task, TaskStatus, TaskPriority, Project
+from schemas.task import TaskCreate, TaskUpdate, TaskResponse
+from services.taskmaster_integration import taskmaster_service
+from services.ai_service import ai_service
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 

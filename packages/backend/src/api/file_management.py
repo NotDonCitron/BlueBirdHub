@@ -9,9 +9,9 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from src.backend.database.database import get_db
-from src.backend.services.file_manager import file_manager
-from src.backend.services.file_scanner import file_scanner
+from database.database import get_db
+from services.file_manager import file_manager
+from services.file_scanner import file_scanner
 
 router = APIRouter(prefix="/file-management", tags=["file-management"])
 

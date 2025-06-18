@@ -46,7 +46,7 @@ export class ApiClient {
       this.combineAbortSignals(signal, controller.signal) : 
       controller.signal;
 
-    let lastError: Error;
+    let lastError: Error | undefined;
     
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -88,7 +88,7 @@ export class ApiClient {
     }
 
     throw new ApiRequestError(
-      `Request failed after ${retries + 1} attempts: ${lastError.message}`,
+      `Request failed after ${retries + 1} attempts: ${lastError?.message || 'Unknown error'}`,
       undefined,
       'RETRY_EXHAUSTED'
     );

@@ -5,6 +5,9 @@ interface ErrorInfo {
   timestamp: string;
   userAgent: string;
   url: string;
+  type?: string;
+  component?: string;
+  context?: any;
 }
 
 class ErrorLogger {
@@ -26,7 +29,7 @@ class ErrorLogger {
   private setupGlobalErrorHandlers(): void {
     // Handle JavaScript errors
     window.addEventListener('error', (event) => {
-      this.logError({
+      this.logErrorInfo({
         message: event.message,
         stack: event.error?.stack,
         source: 'JavaScript Error',
@@ -38,7 +41,7 @@ class ErrorLogger {
 
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
-      this.logError({
+      this.logErrorInfo({
         message: event.reason?.message || String(event.reason),
         stack: event.reason?.stack,
         source: 'Unhandled Promise Rejection',
@@ -51,7 +54,7 @@ class ErrorLogger {
     // Override console.error to capture logged errors
     const originalConsoleError = console.error;
     console.error = (...args: any[]) => {
-      this.logError({
+      this.logErrorInfo({
         message: args.join(' '),
         source: 'Console Error',
         timestamp: new Date().toISOString(),
@@ -64,7 +67,7 @@ class ErrorLogger {
     // Override console.warn for warnings
     const originalConsoleWarn = console.warn;
     console.warn = (...args: any[]) => {
-      this.logError({
+      this.logErrorInfo({
         message: args.join(' '),
         source: 'Console Warning',
         timestamp: new Date().toISOString(),
@@ -75,15 +78,63 @@ class ErrorLogger {
     };
   }
 
-  public logError(errorInfo: ErrorInfo): void {
-    this.errors.push(errorInfo);
+  public logErrorInfo(errorInfo: ErrorInfo): void {
+    this.logErrorInternal(errorInfo);
+  }
+
+  private async sendToBackend(errorInfo: ErrorInfo): Promise<void> {
+    try {
+      // Use relative URL in production, absolute in development
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/logs/frontend-error'
+        : 'http://localhost:8000/api/logs/frontend-error';
+      
+      await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(errorInfo),
+      });
+    } catch (error) {
+      // Silently fail if backend is not available
+      console.debug('Could not send error to backend:', error);
+    }
+  }
+
+  // Public method to log errors with context
+  public logError(error: Error, context?: any): void {
+    const errorInfo: ErrorInfo = {
+      message: error.message,
+      stack: error.stack,
+      source: 'Manual Log',
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      type: error.name,
+      component: context?.component,
+      context
+    };
     
-    // Keep only the last maxErrors entries
+    this.logErrorInternal(errorInfo);
+  }
+
+  // Get errors for dashboard
+  public getErrors(): ErrorInfo[] {
+    return [...this.errors];
+  }
+
+  // Clear all errors
+  private logErrorInternal(errorInfo: ErrorInfo): void {
+    // Store error
+    this.errors.unshift(errorInfo);
+    
+    // Keep only the last maxErrors
     if (this.errors.length > this.maxErrors) {
-      this.errors = this.errors.slice(-this.maxErrors);
+      this.errors = this.errors.slice(0, this.maxErrors);
     }
 
-    // Log to console with timestamp and color coding
+    // Console log with colors
     const timestamp = new Date().toLocaleTimeString();
     console.group(`%c🚨 Error Logged [${timestamp}]`, 'color: red; font-weight: bold;');
     console.log(`%cSource: ${errorInfo.source}`, 'color: orange;');
@@ -99,25 +150,6 @@ class ErrorLogger {
     this.sendToBackend(errorInfo);
   }
 
-  private async sendToBackend(errorInfo: ErrorInfo): Promise<void> {
-    try {
-      await fetch('http://localhost:8001/api/logs/frontend-error', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(errorInfo),
-      });
-    } catch (error) {
-      // Silently fail if backend is not available
-      console.debug('Could not send error to backend:', error);
-    }
-  }
-
-  public getErrors(): ErrorInfo[] {
-    return [...this.errors];
-  }
-
   public clearErrors(): void {
     this.errors = [];
     console.log('%c✅ Error log cleared', 'color: green; font-weight: bold;');
@@ -128,7 +160,7 @@ class ErrorLogger {
   }
 
   public logCustomError(message: string, details?: any): void {
-    this.logError({
+    this.logErrorInfo({
       message: `${message}${details ? ` - Details: ${JSON.stringify(details)}` : ''}`,
       source: 'Custom Error',
       timestamp: new Date().toISOString(),

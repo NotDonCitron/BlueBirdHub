@@ -20,9 +20,9 @@ from collections import defaultdict
 from sqlalchemy.orm import Session
 from loguru import logger
 
-from src.backend.database.database import SessionLocal
-from src.backend.crud.crud_file import file_metadata as crud_file, tag as crud_tag
-from src.backend.schemas.file_metadata import FileMetadataCreate, FileMetadataUpdate
+from database.database import SessionLocal
+from crud.crud_file import file_metadata as crud_file, tag as crud_tag
+from schemas.file_metadata import FileMetadataCreate, FileMetadataUpdate
 from .enhanced_ai_service import enhanced_ai_service
 # from .file_scanner import file_scanner
 

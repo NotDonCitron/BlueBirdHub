@@ -2,9 +2,9 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from src.backend.crud.base import CRUDBase
-from src.backend.models.workspace import Workspace
-from src.backend.schemas.workspace import WorkspaceCreate, WorkspaceUpdate
+from .base import CRUDBase
+from models.workspace import Workspace
+from schemas.workspace import WorkspaceCreate, WorkspaceUpdate
 
 class CRUDWorkspace(CRUDBase[Workspace, WorkspaceCreate, WorkspaceUpdate]):
     """CRUD operations for Workspace"""

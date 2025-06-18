@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
-from src.backend.database.database import get_db
-from src.backend.models.workspace import Workspace
-from src.backend.services.ai_service import ai_service
-from src.backend.api.workspaces_enhanced import (
+from database.database import get_db
+from models.workspace import Workspace
+from services.ai_service import ai_service
+from api.workspaces_enhanced import (
     get_workspace_template_context,
     calculate_enhanced_compatibility
 )
@@ -209,7 +209,7 @@ async def get_content_insights(
     try:
         from datetime import datetime, timedelta
         from sqlalchemy import and_, func as sql_func
-        from src.backend.models.task import Task
+        from models.task import Task
         
         # Date range for analysis
         end_date = datetime.now()

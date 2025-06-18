@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrdnungsHub API Test Dashboard</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .api-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .api-card h2 {
+            margin-top: 0;
+            color: #2563eb;
+            font-size: 1.25rem;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .error {
+            background: #fee;
+            border-color: #fcc;
+            color: #c00;
+        }
+        .success {
+            background: #efe;
+            border-color: #cfc;
+            color: #060;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 OrdnungsHub API Test Dashboard</h1>
+        
+        <div class="api-grid">
+            <!-- Zusammenfassung -->
+            <div class="api-card">
+                <h2>🧠 Text Zusammenfassung (Cohere)</h2>
+                <textarea id="summarize-input" rows="5" placeholder="Füge hier einen Text ein, der zusammengefasst werden soll..."></textarea>
+                <select id="summary-length" style="width: 100%; margin-bottom: 10px; padding: 10px;">
+                    <option value="short">Kurz</option>
+                    <option value="medium" selected>Mittel</option>
+                    <option value="long">Lang</option>
+                </select>
+                <button onclick="summarizeText()">Zusammenfassen</button>
+                <div id="summarize-result" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- Dokument-Klassifizierung -->
+            <div class="api-card">
+                <h2>📄 Dokument Klassifizierung (HuggingFace)</h2>
+                <textarea id="classify-input" rows="5" placeholder="Füge hier einen Dokumenttext ein..."></textarea>
+                <button onclick="classifyDocument()">Klassifizieren</button>
+                <div id="classify-result" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- Web-Suche -->
+            <div class="api-card">
+                <h2>🔍 Web Suche (Brave)</h2>
+                <input type="text" id="search-input" placeholder="Suchbegriff eingeben...">
+                <button onclick="searchWeb()">Suchen</button>
+                <div id="search-result" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- System Status -->
+            <div class="api-card">
+                <h2>💚 System Status</h2>
+                <button onclick="checkHealth()">Status prüfen</button>
+                <div id="health-result" class="result" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'API Error');
+            }
+            
+            return result;
+        }
+        
+        async function summarizeText() {
+            const input = document.getElementById('summarize-input');
+            const length = document.getElementById('summary-length').value;
+            const resultDiv = document.getElementById('summarize-result');
+            
+            if (!input.value.trim()) {
+                alert('Bitte Text eingeben!');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Wird zusammengefasst...';
+            
+            try {
+                const result = await apiCall('/api/ai/summarize', 'POST', {
+                    text: input.value,
+                    length: length
+                });
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `📝 Zusammenfassung:\n\n${result.summary}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Fehler: ${error.message}`;
+            }
+        }
+        
+        async function classifyDocument() {
+            const input = document.getElementById('classify-input');
+            const resultDiv = document.getElementById('classify-result');
+            
+            if (!input.value.trim()) {
+                alert('Bitte Text eingeben!');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Wird klassifiziert...';
+            
+            try {
+                const result = await apiCall('/api/ai/classify', 'POST', {
+                    text: input.value
+                });
+                
+                resultDiv.className = 'result success';
+                let output = `🏷️ Klassifizierung: ${result.classification}\n`;
+                output += `📊 Konfidenz: ${(result.confidence * 100).toFixed(1)}%\n\n`;
+                output += `Alle Ergebnisse:\n`;
+                result.all_results.forEach(r => {
+                    output += `  • ${r.label}: ${(r.score * 100).toFixed(1)}%\n`;
+                });
+                resultDiv.textContent = output;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Fehler: ${error.message}`;
+            }
+        }
+        
+        async function searchWeb() {
+            const input = document.getElementById('search-input');
+            const resultDiv = document.getElementById('search-result');
+            
+            if (!input.value.trim()) {
+                alert('Bitte Suchbegriff eingeben!');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Suche läuft...';
+            
+            try {
+                const result = await apiCall('/api/search', 'POST', {
+                    query: input.value
+                });
+                
+                resultDiv.className = 'result success';
+                let output = `🔍 Suchergebnisse für "${result.query}":\n\n`;
+                result.results.forEach((r, i) => {
+                    output += `${i + 1}. ${r.title}\n`;
+                    output += `   📎 ${r.url}\n`;
+                    output += `   ${r.description}\n\n`;
+                });
+                resultDiv.textContent = output;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Fehler: ${error.message}`;
+            }
+        }
+        
+        async function checkHealth() {
+            const resultDiv = document.getElementById('health-result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Prüfe System...';
+            
+            try {
+                const result = await apiCall('/api/health');
+                
+                resultDiv.className = 'result success';
+                let output = `✅ ${result.message}\n\n`;
+                output += `Geladene APIs:\n`;
+                result.apis_loaded.forEach(api => {
+                    output += `  • ${api}\n`;
+                });
+                resultDiv.textContent = output;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Server nicht erreichbar: ${error.message}\n\nStarte den Backend mit:\npython enhanced_backend.py`;
+            }
+        }
+        
+        // Initial health check
+        window.onload = () => {
+            checkHealth();
+        };
+    </script>
+</body>
+</html>

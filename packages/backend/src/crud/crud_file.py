@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 import hashlib
 import os
 
-from src.backend.crud.base import CRUDBase
-from src.backend.models.file_metadata import FileMetadata, Tag, file_tags
-from src.backend.schemas.file_metadata import FileMetadataCreate, FileMetadataUpdate, TagCreate, TagUpdate
+from .base import CRUDBase
+from models.file_metadata import FileMetadata, Tag, file_tags
+from schemas.file_metadata import FileMetadataCreate, FileMetadataUpdate, TagCreate, TagUpdate
 
 class CRUDFileMetadata(CRUDBase[FileMetadata, FileMetadataCreate, FileMetadataUpdate]):
     """CRUD operations for File Metadata"""

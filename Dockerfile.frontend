@@ -1,0 +1,87 @@
+# Frontend Dockerfile for OrdnungsHub React App
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY webpack.config.js ./
+
+# Install dependencies (including dev for build, skip git hooks)
+RUN npm ci --ignore-scripts
+
+# Copy source code
+COPY src/frontend/ ./src/frontend/
+COPY src/utils/ ./src/utils/
+COPY packages/ ./packages/
+
+# Build the application
+ENV NODE_ENV=production
+RUN npm run build:react
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built app to nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Create nginx config for React app
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    \
+    # React Router support \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    \
+    # API proxy to backend \
+    location /api/ { \
+        proxy_pass http://ordnungshub-backend:8000/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+        proxy_set_header X-Forwarded-Proto $scheme; \
+    } \
+    \
+    # Health endpoint proxy \
+    location /health { \
+        proxy_pass http://ordnungshub-backend:8000/health; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+    \
+    # Tasks endpoint proxy \
+    location /tasks/ { \
+        proxy_pass http://ordnungshub-backend:8000/tasks/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+    \
+    # Workspaces endpoint proxy \
+    location /workspaces/ { \
+        proxy_pass http://ordnungshub-backend:8000/workspaces/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+    \
+    # Files endpoint proxy \
+    location /files/ { \
+        proxy_pass http://ordnungshub-backend:8000/files/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+    \
+    # Gzip compression \
+    gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1000; \
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript; \
+}' > /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

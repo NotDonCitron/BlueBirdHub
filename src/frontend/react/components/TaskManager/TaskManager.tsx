@@ -20,6 +20,18 @@ interface Workspace {
   id: number;
   name: string;
   color: string;
+  description?: string;
+  theme?: string;
+  icon?: string;
+  task_count?: number;
+}
+
+interface NewWorkspace {
+  name: string;
+  description: string;
+  color: string;
+  theme: string;
+  icon: string;
 }
 
 interface WorkspaceTaskOverview {
@@ -65,7 +77,7 @@ const TaskManager: React.FC = () => {
   const [progress, setProgress] = useState<TaskProgress | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'dependencies' | 'add' | 'workspace-overview'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'dependencies' | 'add' | 'workspace-overview' | 'workspace-detail'>('overview');
   const [complexityReport, setComplexityReport] = useState<any>(null);
   
   // Workspace integration state
@@ -73,6 +85,18 @@ const TaskManager: React.FC = () => {
   const [workspaceOverview, setWorkspaceOverview] = useState<{[key: number]: WorkspaceTaskOverview}>({});
   const [selectedWorkspace, setSelectedWorkspace] = useState<number | null>(null);
   const [workspaceSuggestions, setWorkspaceSuggestions] = useState<any[]>([]);
+  const [workspaceDetail, setWorkspaceDetail] = useState<any>(null);
+  
+  // New workspace creation
+  const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
+  const [aiWorkspaceSuggestions, setAiWorkspaceSuggestions] = useState<any[]>([]);
+  const [newWorkspace, setNewWorkspace] = useState<NewWorkspace>({
+    name: '',
+    description: '',
+    color: '#3b82f6',
+    theme: 'modern_light',
+    icon: '📁'
+  });
   
   // New task form
   const [newTask, setNewTask] = useState({
@@ -88,6 +112,12 @@ const TaskManager: React.FC = () => {
     loadWorkspaces();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'workspace-overview' && workspaces.length > 0) {
+      loadWorkspaceOverview();
+    }
+  }, [activeTab, workspaces, tasks]);
+
   const loadWorkspaces = async () => {
     try {
       const response = await makeApiRequest('/workspaces/');
@@ -99,12 +129,95 @@ const TaskManager: React.FC = () => {
 
   const loadWorkspaceOverview = async () => {
     try {
-      const response = await makeApiRequest('/tasks/taskmaster/workspace-overview');
-      if (response.success) {
-        setWorkspaceOverview(response.overview);
+      // For now, create overview from existing workspaces and tasks data
+      const overview: {[key: number]: WorkspaceTaskOverview} = {};
+      
+      for (const workspace of workspaces) {
+        const workspaceTasks = tasks.filter(task => task.workspace_id === workspace.id);
+        const completedTasks = workspaceTasks.filter(task => task.status === 'completed' || task.status === 'done');
+        const inProgressTasks = workspaceTasks.filter(task => task.status === 'in-progress');
+        const pendingTasks = workspaceTasks.filter(task => task.status === 'pending');
+        
+        overview[workspace.id] = {
+          workspace_name: workspace.name,
+          workspace_color: workspace.color,
+          statistics: {
+            total_tasks: workspaceTasks.length,
+            completed_tasks: completedTasks.length,
+            in_progress_tasks: inProgressTasks.length,
+            pending_tasks: pendingTasks.length,
+            completion_rate: workspaceTasks.length > 0 ? (completedTasks.length / workspaceTasks.length) * 100 : 0
+          },
+          recent_tasks: workspaceTasks.slice(0, 3),
+          tasks: workspaceTasks
+        };
       }
+      
+      setWorkspaceOverview(overview);
     } catch (error) {
       console.error('Failed to load workspace overview:', error);
+    }
+  };
+
+  const loadWorkspaceDetail = async (workspaceId: number) => {
+    try {
+      const response = await makeApiRequest(`/workspaces/${workspaceId}/detail`);
+      setWorkspaceDetail(response);
+      setSelectedWorkspace(workspaceId);
+      setActiveTab('workspace-detail');
+    } catch (error) {
+      console.error('Failed to load workspace detail:', error);
+    }
+  };
+
+  const generateAIWorkspaceSuggestions = async (taskTitle: string, taskDescription: string) => {
+    try {
+      const response = await makeApiRequest('/ai/suggest-workspaces', 'POST', {
+        task_title: taskTitle,
+        task_description: taskDescription,
+        existing_workspaces: workspaces.map(w => ({ 
+          id: w.id,
+          name: w.name, 
+          description: w.description,
+          theme: w.theme,
+          color: w.color
+        }))
+      });
+      if (response.suggestions) {
+        setAiWorkspaceSuggestions(response.suggestions);
+      }
+    } catch (error) {
+      console.error('Failed to get AI workspace suggestions:', error);
+    }
+  };
+
+  const createWorkspace = async () => {
+    if (!newWorkspace.name.trim()) return;
+
+    try {
+      setIsLoading(true);
+      const response = await makeApiRequest('/workspaces/', 'POST', newWorkspace);
+      
+      // Add new workspace to list
+      setWorkspaces([...workspaces, response]);
+      
+      // Reset form
+      setNewWorkspace({
+        name: '',
+        description: '',
+        color: '#3b82f6',
+        theme: 'modern_light',
+        icon: '📁'
+      });
+      setShowCreateWorkspace(false);
+      setAiWorkspaceSuggestions([]);
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to create workspace:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -242,6 +355,8 @@ const TaskManager: React.FC = () => {
     // Trigger workspace suggestions when title is available (description optional)
     if (updatedTask.title.trim() && !updatedTask.workspace_id) {
       await suggestWorkspaceForTask(updatedTask.title, updatedTask.description || '');
+      // Also generate AI suggestions for new workspaces
+      await generateAIWorkspaceSuggestions(updatedTask.title, updatedTask.description || '');
     }
   };
 
@@ -598,8 +713,11 @@ const TaskManager: React.FC = () => {
                   value={newTask.workspace_id || ''}
                   onChange={(e) => {
                     if (e.target.value === 'create_new') {
-                      // TODO: Implement create new workspace functionality
-                      alert('Create new workspace functionality will be implemented');
+                      setShowCreateWorkspace(true);
+                      // Generate AI suggestions for new workspace
+                      if (newTask.title.trim()) {
+                        generateAIWorkspaceSuggestions(newTask.title, newTask.description || '');
+                      }
                     } else {
                       setNewTask({ ...newTask, workspace_id: e.target.value ? parseInt(e.target.value) : null });
                     }
@@ -718,6 +836,12 @@ const TaskManager: React.FC = () => {
                       >
                         View All Tasks
                       </button>
+                      <button 
+                        className="btn btn-sm btn-primary"
+                        onClick={() => loadWorkspaceDetail(parseInt(workspaceId))}
+                      >
+                        📊 Workspace Detail
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -738,6 +862,273 @@ const TaskManager: React.FC = () => {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Create Workspace Modal */}
+        {showCreateWorkspace && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>🤖 Create New Workspace with AI</h3>
+                <button 
+                  className="close-button"
+                  onClick={() => {
+                    setShowCreateWorkspace(false);
+                    setAiWorkspaceSuggestions([]);
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="modal-body">
+                {aiWorkspaceSuggestions.length > 0 && (
+                  <div className="ai-workspace-suggestions">
+                    <h4>🤖 AI suggests these workspaces for your task:</h4>
+                    <div className="suggestions-grid">
+                      {aiWorkspaceSuggestions.map((suggestion, index) => (
+                        <div key={index} className="ai-suggestion-card">
+                          <div className="suggestion-header">
+                            <span className="suggestion-icon">{suggestion.icon}</span>
+                            <h5>{suggestion.name}</h5>
+                            <span className="confidence-badge">
+                              {(suggestion.confidence * 100).toFixed(0)}% match
+                            </span>
+                          </div>
+                          <p className="suggestion-description">{suggestion.description}</p>
+                          <div className="suggestion-tags">
+                            {suggestion.suggested_categories?.map((cat: string, idx: number) => (
+                              <span key={idx} className="category-tag">{cat}</span>
+                            ))}
+                          </div>
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                              setNewWorkspace({
+                                name: suggestion.name,
+                                description: suggestion.description,
+                                color: suggestion.color || '#3b82f6',
+                                theme: suggestion.theme || 'modern_light',
+                                icon: suggestion.icon || '📁'
+                              });
+                            }}
+                          >
+                            Use This Suggestion
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="divider">
+                      <span>or create custom workspace</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="create-workspace-form">
+                  <div className="form-group">
+                    <label>Workspace Name *</label>
+                    <input
+                      type="text"
+                      value={newWorkspace.name}
+                      onChange={(e) => setNewWorkspace({ ...newWorkspace, name: e.target.value })}
+                      placeholder="Enter workspace name..."
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea
+                      value={newWorkspace.description}
+                      onChange={(e) => setNewWorkspace({ ...newWorkspace, description: e.target.value })}
+                      placeholder="Describe this workspace..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Icon</label>
+                      <select
+                        value={newWorkspace.icon}
+                        onChange={(e) => setNewWorkspace({ ...newWorkspace, icon: e.target.value })}
+                      >
+                        <option value="📁">📁 Folder</option>
+                        <option value="💼">💼 Work</option>
+                        <option value="🏠">🏠 Home</option>
+                        <option value="🎨">🎨 Creative</option>
+                        <option value="📚">📚 Learning</option>
+                        <option value="⚡">⚡ Quick</option>
+                        <option value="🔬">🔬 Research</option>
+                        <option value="🎯">🎯 Goals</option>
+                        <option value="🚀">🚀 Projects</option>
+                        <option value="📊">📊 Data</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Color Theme</label>
+                      <div className="color-picker">
+                        {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'].map(color => (
+                          <button
+                            key={color}
+                            className={`color-option ${newWorkspace.color === color ? 'selected' : ''}`}
+                            style={{ backgroundColor: color }}
+                            onClick={() => setNewWorkspace({ ...newWorkspace, color })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCreateWorkspace(false);
+                    setAiWorkspaceSuggestions([]);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    const workspace = await createWorkspace();
+                    if (workspace) {
+                      setNewTask({ ...newTask, workspace_id: workspace.id });
+                    }
+                  }}
+                  disabled={!newWorkspace.name.trim() || isLoading}
+                >
+                  {isLoading ? 'Creating...' : 'Create & Use Workspace'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Workspace Detail View */}
+        {activeTab === 'workspace-detail' && workspaceDetail && (
+          <div className="workspace-detail-tab">
+            <div className="workspace-detail-header">
+              <div className="workspace-info">
+                <span 
+                  className="workspace-icon" 
+                  style={{ color: workspaceDetail.workspace?.color }}
+                >
+                  {workspaceDetail.workspace?.icon || '📁'}
+                </span>
+                <div>
+                  <h3 style={{ color: workspaceDetail.workspace?.color }}>
+                    {workspaceDetail.workspace?.name}
+                  </h3>
+                  <p className="workspace-description">
+                    {workspaceDetail.workspace?.description}
+                  </p>
+                </div>
+              </div>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setActiveTab('workspace-overview')}
+              >
+                ← Back to Overview
+              </button>
+            </div>
+            
+            {workspaceDetail.statistics && (
+              <div className="workspace-stats-detailed">
+                <div className="stat-card">
+                  <div className="stat-number">{workspaceDetail.statistics.tasks?.total || 0}</div>
+                  <div className="stat-label">Total Tasks</div>
+                </div>
+                <div className="stat-card completed">
+                  <div className="stat-number">{workspaceDetail.statistics.tasks?.completed || 0}</div>
+                  <div className="stat-label">Completed</div>
+                </div>
+                <div className="stat-card in-progress">
+                  <div className="stat-number">{workspaceDetail.statistics.tasks?.in_progress || 0}</div>
+                  <div className="stat-label">In Progress</div>
+                </div>
+                <div className="stat-card pending">
+                  <div className="stat-number">{workspaceDetail.statistics.tasks?.pending || 0}</div>
+                  <div className="stat-label">Pending</div>
+                </div>
+                <div className="stat-card completion">
+                  <div className="stat-number">{workspaceDetail.statistics.tasks?.completion_rate?.toFixed(1) || 0}%</div>
+                  <div className="stat-label">Completion Rate</div>
+                </div>
+                {workspaceDetail.statistics.files && (
+                  <div className="stat-card files">
+                    <div className="stat-number">{workspaceDetail.statistics.files.total || 0}</div>
+                    <div className="stat-label">Files</div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="workspace-content">
+              <div className="workspace-section">
+                <h4>📋 All Tasks</h4>
+                <div className="workspace-tasks-grid">
+                  {workspaceDetail.tasks?.map((task: Task) => (
+                    <div key={task.id} className="workspace-task-card">
+                      <div className="task-header">
+                        <h5>{task.title}</h5>
+                        <div className="task-badges">
+                          <span 
+                            className="status-badge" 
+                            style={{ backgroundColor: getStatusColor(task.status) }}
+                          >
+                            {task.status}
+                          </span>
+                          <span 
+                            className="priority-badge" 
+                            style={{ backgroundColor: getPriorityColor(task.priority) }}
+                          >
+                            {task.priority}
+                          </span>
+                        </div>
+                      </div>
+                      {task.description && (
+                        <p className="task-description">{task.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {(!workspaceDetail.tasks || workspaceDetail.tasks.length === 0) && (
+                  <div className="empty-state">
+                    <p>No tasks in this workspace yet.</p>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => setActiveTab('add')}
+                    >
+                      Add First Task
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {workspaceDetail.files && workspaceDetail.files.length > 0 && (
+                <div className="workspace-section">
+                  <h4>📁 Related Files</h4>
+                  <div className="workspace-files-grid">
+                    {workspaceDetail.files.map((file: any, index: number) => (
+                      <div key={index} className="file-card">
+                        <div className="file-icon">📄</div>
+                        <div className="file-info">
+                          <span className="file-name">{file.name}</span>
+                          <span className="file-size">{file.size}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

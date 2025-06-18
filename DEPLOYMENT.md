@@ -9,6 +9,7 @@ This guide shows how to deploy OrdnungsHub to various cloud platforms.
 Railway is perfect for FastAPI apps with zero configuration needed.
 
 **Steps:**
+
 1. Go to [railway.app](https://railway.app)
 2. Sign up with GitHub
 3. Click "New Project" → "Deploy from GitHub repo"
@@ -16,6 +17,7 @@ Railway is perfect for FastAPI apps with zero configuration needed.
 5. Railway will automatically detect it's a Python app and deploy!
 
 **Files included:**
+
 - `railway.json` - Railway configuration
 - `Procfile` - Process definition
 - `requirements.txt` - Python dependencies
@@ -23,6 +25,7 @@ Railway is perfect for FastAPI apps with zero configuration needed.
 ### 2. Vercel (Fast & Free)
 
 **Steps:**
+
 1. Go to [vercel.com](https://vercel.com)
 2. Import your GitHub repository
 3. Framework preset: "Other"
@@ -33,8 +36,10 @@ Railway is perfect for FastAPI apps with zero configuration needed.
 ### 3. Heroku
 
 **Steps:**
+
 1. Install Heroku CLI
 2. Run these commands:
+
 ```bash
 heroku create ordnungshub-demo
 git push heroku main
@@ -43,6 +48,7 @@ git push heroku main
 ### 4. Render
 
 **Steps:**
+
 1. Go to [render.com](https://render.com)
 2. Connect GitHub repository
 3. Select "Web Service"
@@ -78,6 +84,7 @@ The `index.html` file provides a complete web interface that:
 ## 🧪 Testing Deployment
 
 After deployment, your API will be available at endpoints like:
+
 - `GET /` - Basic info
 - `GET /health` - Health check
 - `GET /docs` - Interactive API documentation
@@ -87,6 +94,7 @@ After deployment, your API will be available at endpoints like:
 ## 🎯 Demo Features
 
 Once deployed, users can test:
+
 1. **Dashboard Analytics** - Real-time statistics
 2. **Taskmaster AI** - Task management with mock data
 3. **Workspace Management** - AI-powered content assignment

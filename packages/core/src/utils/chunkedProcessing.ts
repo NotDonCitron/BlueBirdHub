@@ -62,7 +62,7 @@ export class ChunkedProcessor {
       const chunkResults = await this.limitConcurrency(chunkPromises, maxConcurrent);
       
       chunkResults.forEach(result => {
-        if (result.success) {
+        if (result.success && result.result !== undefined) {
           results[result.index] = result.result;
         }
       });

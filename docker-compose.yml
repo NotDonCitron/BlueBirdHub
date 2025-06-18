@@ -18,6 +18,10 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS}
       - LOG_LEVEL=INFO
       - WORKERS=4
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - ordnungshub_data:/app/data
       - ordnungshub_uploads:/app/uploads
@@ -67,7 +71,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "6380:6379"
     networks:
       - ordnungshub-network
     healthcheck:
@@ -76,7 +80,27 @@ services:
       timeout: 3s
       retries: 5
 
-  # Nginx Reverse Proxy
+  # OrdnungsHub Frontend
+  ordnungshub-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ordnungshub-frontend
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    depends_on:
+      - ordnungshub-backend
+    networks:
+      - ordnungshub-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Nginx Reverse Proxy (for production)
   nginx:
     image: nginx:alpine
     container_name: ordnungshub-nginx
@@ -89,6 +113,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ordnungshub_logs:/var/log/nginx
     depends_on:
+      - ordnungshub-frontend
       - ordnungshub-backend
     networks:
       - ordnungshub-network

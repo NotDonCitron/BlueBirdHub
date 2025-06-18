@@ -1,5 +1,7 @@
 # OrdnungsHub - AI-Powered System Organizer
 
+![CI Status](https://github.com/DonCitron/nnewcoededui/actions/workflows/ci.yml/badge.svg)
+
 OrdnungsHub is an AI-powered desktop application designed to help users organize their digital workspace efficiently. It combines local AI processing with intelligent file management and system optimization tools.
 
 ## Project Structure

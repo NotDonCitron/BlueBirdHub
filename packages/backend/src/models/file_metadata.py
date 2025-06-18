@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, BigInteger, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from src.backend.database.database import Base
+from database.database import Base
 
 # Association table for many-to-many relationship between files and tags
 file_tags = Table(

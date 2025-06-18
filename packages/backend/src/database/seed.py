@@ -7,17 +7,17 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import random
 
-from src.backend.database.database import SessionLocal, init_db
-from src.backend.models.user import User, UserPreference
-from src.backend.models.workspace import Workspace, WorkspaceTheme
-from src.backend.models.task import Task, Project, TaskStatus, TaskPriority
-from src.backend.models.file_metadata import Tag
-from src.backend.crud.crud_user import user as crud_user
-from src.backend.crud.crud_workspace import workspace as crud_workspace
-from src.backend.crud.crud_task import task as crud_task, project as crud_project
-from src.backend.schemas.user import UserCreate
-from src.backend.schemas.workspace import WorkspaceCreate
-from src.backend.schemas.task import TaskCreate, ProjectCreate
+from database.database import SessionLocal, init_db
+from models.user import User, UserPreference
+from models.workspace import Workspace, WorkspaceTheme
+from models.task import Task, Project, TaskStatus, TaskPriority
+from models.file_metadata import Tag
+from crud.crud_user import user as crud_user
+from crud.crud_workspace import workspace as crud_workspace
+from crud.crud_task import task as crud_task, project as crud_project
+from schemas.user import UserCreate
+from schemas.workspace import WorkspaceCreate
+from schemas.task import TaskCreate, ProjectCreate
 
 def create_default_themes(db: Session):
     """Create default workspace themes"""

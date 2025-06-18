@@ -5,11 +5,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Dict, Any
 from loguru import logger
 
-from src.backend.database.database import get_db
-from src.backend.models.task import Task, TaskStatus
-from src.backend.models.workspace import Workspace
-from src.backend.models.file_metadata import FileMetadata
-from src.backend.schemas.dashboard import DashboardStats, DashboardResponse
+from database.database import get_db
+from models.task import Task, TaskStatus
+from models.workspace import Workspace
+from models.file_metadata import FileMetadata
+from schemas.dashboard import DashboardStats, DashboardResponse
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 

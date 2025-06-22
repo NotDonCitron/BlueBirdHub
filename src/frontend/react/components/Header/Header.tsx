@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSearch } from '../../hooks/useSearch';
+import SearchResults from '../SearchBar/SearchResults';
 import './Header.css';
 
 interface HeaderProps {
@@ -27,7 +29,10 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { setQuery, results, isLoading } = useSearch();
+  const [localQuery, setLocalQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
@@ -55,9 +60,9 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
+    if (localQuery.trim()) {
       // Navigate to search page with query
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/search?q=${encodeURIComponent(localQuery.trim())}`);
     } else {
       // Navigate to search page without query
       navigate('/search');
@@ -66,9 +71,31 @@ const Header: React.FC<HeaderProps> = ({
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      // Potentially navigate to a full search page
     }
   };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setQuery(localQuery);
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [localQuery, setQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="header">
@@ -86,22 +113,17 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="header-center">
-        <div className="search-container">
+        <div className="search-container" ref={searchContainerRef}>
           <input
             type="text"
             className="search-input"
             placeholder="Search everything..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={localQuery}
+            onChange={(e) => setLocalQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
             onKeyDown={handleSearchKeyDown}
           />
-          <button 
-            className="search-button" 
-            title="Search"
-            onClick={handleSearch}
-          >
-            🔍
-          </button>
+           {isSearchFocused && <SearchResults results={results} isLoading={isLoading} onClose={() => setIsSearchFocused(false)} />}
         </div>
       </div>
 
@@ -127,13 +149,23 @@ const Header: React.FC<HeaderProps> = ({
           </button>
           {user && (
             <>
-              <span className="user-info">{user.username}</span>
+              <span className="user-info">👤 {user.username}</span>
               <button 
-                className="header-action-btn logout-btn" 
+                className="btn btn-danger logout-btn-prominent" 
                 title="Logout"
                 onClick={logout}
+                style={{
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  marginLeft: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
               >
-                🚪
+                🚪 Logout
               </button>
             </>
           )}

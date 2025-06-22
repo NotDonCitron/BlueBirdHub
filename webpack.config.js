@@ -25,7 +25,7 @@ module.exports = {
       : 'js/[name].chunk.js',
     assetModuleFilename: 'assets/[name].[contenthash:8][ext]',
     clean: true,
-    publicPath: '/',
+    publicPath: './',
   },
   
   optimization: {

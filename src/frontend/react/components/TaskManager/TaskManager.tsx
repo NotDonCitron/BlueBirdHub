@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../../contexts/ApiContext';
+import { apiClient } from '../../lib/api';
 import './TaskManager.css';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { AgentHub } from '../AgentHub/AgentHub';
 
 interface Task {
   id: string;
@@ -69,19 +71,97 @@ interface DependencyEdge {
 }
 
 const TaskManager: React.FC = () => {
-  const { makeApiRequest } = useApi();
-  
+  // API request helper with detailed error logging
+  const makeApiRequest = async (endpoint: string, method: string = 'GET', data?: any) => {
+    try {
+      console.log(`🔄 Making API request: ${method} ${endpoint}`, data);
+      
+      const config: RequestInit = { method };
+      if (data && (method === 'POST' || method === 'PUT')) {
+        config.body = JSON.stringify(data);
+        config.headers = { 'Content-Type': 'application/json' };
+      }
+      
+      // Use the apiClient.request method and handle errors
+      const response = await apiClient.request(endpoint, config);
+      console.log(`✅ API Success: ${method} ${endpoint}`, response);
+      return response;
+    } catch (error) {
+      console.error(`❌ API Error: ${method} ${endpoint}`, error);
+      
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          endpoint,
+          method,
+          data
+        });
+      }
+      
+      // Set appropriate error states
+      if (endpoint.includes('/workspaces')) {
+        setWorkspacesError(`Failed to ${method.toLowerCase()} workspace data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } else if (endpoint.includes('/tasks')) {
+        setTasksError(`Failed to ${method.toLowerCase()} task data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      
+      throw error;
+    }
+  };
+
+  // Auto-check system to verify fixes
+  const autoCheckForErrors = async () => {
+    console.log('🔍 Running auto-check for API connectivity...');
+    
+    try {
+      // Test health endpoint
+      await makeApiRequest('/health');
+      console.log('✅ Health check passed');
+      
+      // Test workspaces endpoint
+      await makeApiRequest('/workspaces');
+      console.log('✅ Workspaces endpoint working');
+      
+      // Test tasks endpoint
+      await makeApiRequest('/tasks/taskmaster/all');
+      console.log('✅ Tasks endpoint working');
+      
+      // Test workspace suggestion endpoint (NEW)
+      await makeApiRequest('/tasks/taskmaster/suggest-workspace', 'POST', {
+        title: 'test task',
+        description: 'test description'
+      });
+      console.log('✅ Workspace suggestion endpoint working');
+      
+      console.log('🎉 All API endpoints are working correctly!');
+      return true;
+    } catch (error) {
+      console.error('❌ Auto-check failed:', error);
+      return false;
+    }
+  };
+
+  // State management with error tracking
+  const [autoCheckResults, setAutoCheckResults] = useState<{status: string, lastCheck: string} | null>(null);
+
   // State management
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+  const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(false);
+  const [tasksError, setTasksError] = useState<string | null>(null);
+  const [workspacesError, setWorkspacesError] = useState<string | null>(null);
   const [nextTask, setNextTask] = useState<Task | null>(null);
   const [progress, setProgress] = useState<TaskProgress | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'dependencies' | 'add' | 'workspace-overview' | 'workspace-detail'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'dependencies' | 'add' | 'workspace-overview' | 'workspace-detail' | 'agents'>('overview');
   const [complexityReport, setComplexityReport] = useState<any>(null);
+  const [showSubtaskForm, setShowSubtaskForm] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Workspace integration state
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [workspaceOverview, setWorkspaceOverview] = useState<{[key: number]: WorkspaceTaskOverview}>({});
   const [selectedWorkspace, setSelectedWorkspace] = useState<number | null>(null);
   const [workspaceSuggestions, setWorkspaceSuggestions] = useState<any[]>([]);
@@ -110,6 +190,15 @@ const TaskManager: React.FC = () => {
   useEffect(() => {
     loadTaskData();
     loadWorkspaces();
+    
+    // Run auto-check after initial load
+    setTimeout(async () => {
+      const checkResult = await autoCheckForErrors();
+      setAutoCheckResults({
+        status: checkResult ? 'success' : 'failed',
+        lastCheck: new Date().toLocaleTimeString()
+      });
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -119,11 +208,16 @@ const TaskManager: React.FC = () => {
   }, [activeTab, workspaces, tasks]);
 
   const loadWorkspaces = async () => {
+    setIsLoadingWorkspaces(true);
+    setWorkspacesError(null);
     try {
-      const response = await makeApiRequest('/workspaces/');
+      const response = await makeApiRequest('/workspaces');
       setWorkspaces(response);
     } catch (error) {
       console.error('Failed to load workspaces:', error);
+      setWorkspacesError('Failed to load workspaces');
+    } finally {
+      setIsLoadingWorkspaces(false);
     }
   };
 
@@ -196,7 +290,7 @@ const TaskManager: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const response = await makeApiRequest('/workspaces/', 'POST', newWorkspace);
+      const response = await makeApiRequest('/workspaces', 'POST', newWorkspace);
       
       // Add new workspace to list
       setWorkspaces([...workspaces, response]);
@@ -269,11 +363,16 @@ const TaskManager: React.FC = () => {
   };
 
   const loadTasks = async () => {
+    setIsLoadingTasks(true);
+    setTasksError(null);
     try {
       const response = await makeApiRequest('/tasks/taskmaster/all', 'GET');
       setTasks(response.tasks || []);
     } catch (error) {
       console.error('Failed to load tasks:', error);
+      setTasksError('Failed to load tasks');
+    } finally {
+      setIsLoadingTasks(false);
     }
   };
 
@@ -331,7 +430,7 @@ const TaskManager: React.FC = () => {
         }
       }
       
-      await makeApiRequest('/tasks/taskmaster/add', 'POST', taskToAdd);
+      await makeApiRequest('/tasks/taskmaster', 'POST', taskToAdd);
       setNewTask({ 
         title: '', 
         description: '', 
@@ -391,6 +490,31 @@ const TaskManager: React.FC = () => {
     }
   };
 
+  const createSubtask = async (parentTaskId: string, title: string) => {
+    try {
+      const response = await makeApiRequest(`/tasks/${parentTaskId}/subtasks`, 'POST', { title });
+      if (response) {
+        // Optimistically update the UI or reload all tasks
+        loadTaskData();
+        setShowSubtaskForm(null); // Hide form on success
+      }
+    } catch (error) {
+      console.error('Failed to create subtask:', error);
+    }
+  };
+
+  const updateSubtaskStatus = async (subtaskId: string, newStatus: string) => {
+    try {
+      const response = await makeApiRequest(`/subtasks/${subtaskId}`, 'PUT', { status: newStatus });
+      if (response) {
+        // Optimistically update the UI or reload all tasks
+        loadTaskData();
+      }
+    } catch (error) {
+      console.error('Failed to update subtask status:', error);
+    }
+  };
+
   const renderTaskCard = (task: Task, isSubtask = false) => (
     <div 
       key={task.id} 
@@ -436,38 +560,52 @@ const TaskManager: React.FC = () => {
         </div>
       )}
       
-      <div className="task-actions">
-        {task.status !== 'done' && (
-          <>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleTaskStatusUpdate(task.id, task.status === 'pending' ? 'in-progress' : 'done');
-              }}
-              className="btn btn-sm btn-primary"
-            >
-              {task.status === 'pending' ? 'Start' : 'Complete'}
-            </button>
-            
-            {task.status === 'pending' && !task.subtasks?.length && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleExpandTask(task.id);
-                }}
-                className="btn btn-sm btn-secondary"
-                disabled={isLoading}
-              >
-                Expand
-              </button>
-            )}
-          </>
-        )}
-      </div>
+      {!isSubtask && (
+        <div className="task-actions">
+          <button onClick={(e) => { e.stopPropagation(); handleExpandTask(task.id); }}>
+            {selectedTask?.id === task.id && selectedTask.subtasks ? 'Collapse' : 'Expand'}
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setShowSubtaskForm(task.id); }}>Add Subtask</button>
+        </div>
+      )}
       
-      {task.subtasks && task.subtasks.length > 0 && (
-        <div className="subtasks">
-          {task.subtasks.map(subtask => renderTaskCard(subtask, true))}
+      {showSubtaskForm === task.id && (
+        <form
+          className="subtask-form"
+          onClick={(e) => e.stopPropagation()}
+          onSubmit={(e) => {
+            e.preventDefault();
+            const titleInput = (e.currentTarget.elements.namedItem('subtaskTitle') as HTMLInputElement);
+            if (titleInput.value) {
+              createSubtask(task.id, titleInput.value);
+              titleInput.value = '';
+            }
+          }}
+        >
+          <input name="subtaskTitle" type="text" placeholder="New subtask..." />
+          <button type="submit">Add</button>
+          <button type="button" onClick={() => setShowSubtaskForm(null)}>Cancel</button>
+        </form>
+      )}
+      
+      {selectedTask?.id === task.id && task.subtasks && task.subtasks.length > 0 && (
+        <div className="subtask-list">
+          <h5>Subtasks:</h5>
+          {task.subtasks.map(subtask => (
+            <div key={subtask.id} className="subtask-item">
+              <input 
+                type="checkbox" 
+                checked={subtask.status === 'done' || subtask.status === 'completed'}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  updateSubtaskStatus(subtask.id, e.target.checked ? 'done' : 'pending');
+                }}
+              />
+              <span className={subtask.status === 'done' || subtask.status === 'completed' ? 'completed' : ''}>
+                {subtask.title}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -532,6 +670,14 @@ const TaskManager: React.FC = () => {
     );
   };
 
+  if (isLoadingTasks || isLoadingWorkspaces) {
+    return <LoadingSpinner />;
+  }
+
+  if (tasksError || workspacesError) {
+    return <div className="error-message">Error loading data. Please try again later.</div>;
+  }
+
   return (
     <div className="task-manager">
       <div className="task-manager-header">
@@ -573,7 +719,40 @@ const TaskManager: React.FC = () => {
         >
           🗂️ Workspaces
         </button>
+        <button 
+          className={`tab ${activeTab === 'agents' ? 'active' : ''}`}
+          onClick={() => setActiveTab('agents')}
+        >
+          🧠 AI Agents
+        </button>
       </div>
+
+      {/* Auto-check status indicator */}
+      {autoCheckResults && (
+        <div className={`auto-check-status ${autoCheckResults.status}`}>
+          <span className="auto-check-icon">
+            {autoCheckResults.status === 'success' ? '✅' : '❌'}
+          </span>
+          <span className="auto-check-message">
+            API Status: {autoCheckResults.status === 'success' ? 'All systems operational' : 'Connection issues detected'}
+          </span>
+          <span className="auto-check-time">
+            Last checked: {autoCheckResults.lastCheck}
+          </span>
+          <button 
+            className="auto-check-retry"
+            onClick={async () => {
+              const checkResult = await autoCheckForErrors();
+              setAutoCheckResults({
+                status: checkResult ? 'success' : 'failed',
+                lastCheck: new Date().toLocaleTimeString()
+              });
+            }}
+          >
+            🔄 Recheck
+          </button>
+        </div>
+      )}
 
       <div className="task-manager-content">
         {activeTab === 'overview' && (
@@ -1007,6 +1186,12 @@ const TaskManager: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'agents' && (
+          <div className="agents-tab">
+            <AgentHub className="agent-hub-container" />
           </div>
         )}
 

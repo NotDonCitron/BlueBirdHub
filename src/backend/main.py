@@ -26,6 +26,9 @@ from src.backend.api.file_management import router as file_management_router
 from src.backend.api.collaboration import router as collaboration_router
 from src.backend.api.suppliers import router as suppliers_router
 from src.backend.api.performance import router as performance_router
+from src.backend.api.smart_organization import router as smart_organization_router
+# Temporarily disabled until aiohttp is installed
+# from src.backend.api.mcp_integration import router as mcp_router
 from src.backend.routes.auth import router as auth_router
 from src.backend.docs.swagger_ui import setup_custom_swagger_ui, get_openapi_schema
 
@@ -261,6 +264,9 @@ app.include_router(file_management_router)
 app.include_router(collaboration_router)
 app.include_router(suppliers_router)
 app.include_router(performance_router)
+app.include_router(smart_organization_router)
+# Temporarily disabled until aiohttp is installed
+# app.include_router(mcp_router)
 
 # Setup custom Swagger UI and OpenAPI schema
 setup_custom_swagger_ui(app)
@@ -387,9 +393,9 @@ async def seed_database_endpoint():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "src.backend.main:app",
         host="127.0.0.1",
-        port=8000,
+        port=8001,
         reload=True,
         log_level="info"
     )

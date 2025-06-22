@@ -29,6 +29,7 @@ tasks.json
 tasks/ 
 
 # Python virtual environment
+.venv/
 venv/
 __pycache__/
 *.pyc
@@ -55,3 +56,15 @@ build/
 
 # User uploads
 uploads/
+
+# IDE
+.cursor/
+.claude/
+
+# reports
+reports/
+outputs/
+temp/
+test_env/
+venv_test/
+*backup*

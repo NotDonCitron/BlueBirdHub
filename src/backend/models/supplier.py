@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, ForeignKey, Text, Decimal, Enum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, ForeignKey, Text, Enum, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from src.backend.database.database import Base
@@ -89,7 +89,7 @@ class PriceList(Base):
     id = Column(Integer, primary_key=True, index=True)
     supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=False)
     product_id = Column(Integer, ForeignKey("supplier_products.id"), nullable=False)
-    price = Column(Decimal(10, 2), nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
     currency = Column(String(3), default="EUR")
     valid_from = Column(DateTime(timezone=True), server_default=func.now())
     valid_until = Column(DateTime(timezone=True))

@@ -12,7 +12,7 @@ from ..database import get_db
 from ..crud.crud_collaboration import collaboration_crud
 from ..models.team import TeamRole, WorkspacePermission
 from ..models.user import User
-from ..auth.auth_handler import get_current_user
+from ..dependencies.auth import get_current_active_user
 
 router = APIRouter(prefix="/api/collaboration", tags=["collaboration"])
 
@@ -60,7 +60,7 @@ class TaskProgressUpdate(BaseModel):
 @router.post("/teams", response_model=dict)
 async def create_team(
     team_data: TeamCreateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Create a new team"""
@@ -89,7 +89,7 @@ async def create_team(
 
 @router.get("/teams", response_model=List[dict])
 async def get_user_teams(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get all teams the current user is a member of"""
@@ -109,7 +109,7 @@ async def get_user_teams(
 @router.get("/teams/{team_id}/members", response_model=List[dict])
 async def get_team_members(
     team_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get all members of a team"""
@@ -132,7 +132,7 @@ async def get_team_members(
 async def invite_team_member(
     team_id: int,
     invite_data: TeamMemberInvite,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Invite a user to join a team"""
@@ -166,7 +166,7 @@ async def invite_team_member(
 # Workspace Sharing Endpoints
 @router.get("/workspaces", response_model=List[dict])
 async def get_accessible_workspaces(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get all workspaces the user has access to"""
@@ -193,7 +193,7 @@ async def get_accessible_workspaces(
 async def share_workspace(
     workspace_id: int,
     share_data: WorkspaceShareRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Share a workspace with a user or team"""
@@ -224,7 +224,7 @@ async def create_workspace_invite(
     workspace_id: int,
     invite_data: WorkspaceInviteRequest,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Create a workspace invitation"""
@@ -258,7 +258,7 @@ async def create_workspace_invite(
 @router.post("/invites/{invite_code}/accept", response_model=dict)
 async def accept_workspace_invite(
     invite_code: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Accept a workspace invitation"""
@@ -290,7 +290,7 @@ async def accept_workspace_invite(
 async def assign_task(
     task_id: int,
     assignment_data: TaskAssignmentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Assign a task to a user"""
@@ -318,7 +318,7 @@ async def assign_task(
 @router.get("/tasks/assigned", response_model=List[dict])
 async def get_assigned_tasks(
     status: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get all tasks assigned to the current user"""
@@ -349,7 +349,7 @@ async def get_assigned_tasks(
 async def update_task_progress(
     task_id: int,
     progress_data: TaskProgressUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Update task completion progress"""
@@ -384,7 +384,7 @@ async def update_task_progress(
 async def add_task_comment(
     task_id: int,
     comment_data: TaskCommentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Add a comment to a task"""
@@ -414,7 +414,7 @@ async def add_task_comment(
 @router.get("/tasks/{task_id}/comments", response_model=List[dict])
 async def get_task_comments(
     task_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get all comments for a task"""
@@ -440,7 +440,7 @@ async def get_task_comments(
 @router.get("/workspaces/{workspace_id}/analytics", response_model=dict)
 async def get_workspace_analytics(
     workspace_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get comprehensive workspace analytics"""
@@ -463,7 +463,7 @@ async def get_workspace_analytics(
 async def get_workspace_activity(
     workspace_id: int,
     limit: int = 50,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get recent workspace activity"""

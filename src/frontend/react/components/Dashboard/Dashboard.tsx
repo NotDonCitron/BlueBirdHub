@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../../contexts/ApiContext';
+import { apiClient } from '../../config/apiClient';
+import TaskCompletionLineChart from '../ProgressCharts/TaskCompletionLineChart';
+import WorkspacePieChart from '../ProgressCharts/WorkspacePieChart';
+import '../ProgressCharts/ProgressCharts.css';
 import './Dashboard.css';
+import { ResponsiveContainer } from 'recharts';
 
 interface DashboardStats {
   totalTasks: number;
@@ -17,56 +21,29 @@ const Dashboard: React.FC = () => {
     totalFiles: 0,
   });
   const [loading, setLoading] = useState(true);
-  const { apiStatus, makeApiRequest } = useApi();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (apiStatus === 'connected') {
-      loadDashboardData();
-    }
-  }, [apiStatus]);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Try to load real data from the API
-      if (makeApiRequest) {
-        try {
-          const response = await makeApiRequest('/dashboard/stats');
-          if (response.success && response.stats) {
-            setStats({
-              totalTasks: response.stats.total_tasks,
-              completedTasks: response.stats.completed_tasks,
-              activeWorkspaces: response.stats.active_workspaces,
-              totalFiles: response.stats.total_files,
-            });
-            return;
-          }
-        } catch (apiError) {
-          console.warn('API request failed, using mock data:', apiError);
-        }
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [statsData, progressData] = await Promise.all([
+          apiClient.get<DashboardStats>('/api/dashboard/stats'),
+          apiClient.getProgressStats<any>() // Using <any> for now
+        ]);
+        setStats(statsData);
+        // Here you would set the data for the charts
+        // For example: setLineChartData(progressData.task_completion_over_time);
+      } catch (err) {
+        setError('Failed to load dashboard data.');
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-      
-      // Fallback to mock data if API is unavailable
-      setStats({
-        totalTasks: 15,
-        completedTasks: 8,
-        activeWorkspaces: 3,
-        totalFiles: 247,
-      });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      // Use minimal fallback data
-      setStats({
-        totalTasks: 0,
-        completedTasks: 0,
-        activeWorkspaces: 0,
-        totalFiles: 0,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadData();
+  }, []);
 
   const getCompletionPercentage = () => {
     if (stats.totalTasks === 0) return 0;
@@ -87,6 +64,7 @@ const Dashboard: React.FC = () => {
       <div className="dashboard-header">
         <h2>Welcome to OrdnungsHub</h2>
         <p>Your AI-powered system organizer is ready to help you stay productive.</p>
+        {error && <p className="dashboard-error">{error}</p>}
       </div>
 
       <div className="dashboard-stats">
@@ -124,6 +102,24 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="dashboard-content">
+        <div className="dashboard-section-full">
+          <h3>Progress Visualization</h3>
+          <div className="charts-grid">
+            <div className="chart-container">
+              <h3>Tasks Completion Over Time</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <TaskCompletionLineChart data={stats?.taskCompletion?.week} />
+              </ResponsiveContainer>
+            </div>
+            <div className="chart-container">
+              <h3>Tasks by Workspace</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <WorkspacePieChart data={stats?.tasksByWorkspace} />
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
         <div className="dashboard-section">
           <h3>Task Progress</h3>
           <div className="progress-card">

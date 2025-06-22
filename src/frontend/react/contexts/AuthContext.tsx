@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: number;
   username: string;
-  email: string;
-  is_active: boolean;
+  last_login: string | null;
+  created_at: string;
 }
 
 interface AuthContextType {
@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored token on mount
+    // Check for stored token on mount  
     const storedToken = localStorage.getItem('auth_token');
     if (storedToken) {
       setToken(storedToken);
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         response = await res.json();
       }
 
-      setUser(response);
+      setUser(response.user);
     } catch (error) {
       console.error('Failed to fetch user info:', error);
       // If fetching user info fails, clear the token
@@ -73,7 +73,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await fetchUserInfo(authToken);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Inform backend about logout
+    if (token) {
+      try {
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
+
+        if ((window as any).electronAPI) {
+          await (window as any).electronAPI.apiRequest('/auth/logout', 'POST', null, headers);
+        } else {
+          await fetch('http://127.0.0.1:8000/auth/logout', {
+            method: 'POST',
+            headers
+          });
+        }
+      } catch (error) {
+        console.error('Failed to logout on backend:', error);
+        // Continue with frontend logout even if backend fails
+      }
+    }
+
+    // Clear frontend state
     setToken(null);
     setUser(null);
     localStorage.removeItem('auth_token');

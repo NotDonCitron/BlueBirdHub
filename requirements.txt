@@ -1,14 +1,21 @@
 # Core Dependencies for Cloud Deployment
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-sqlalchemy==2.0.30
-alembic==1.13.1
-pydantic<2
-python-multipart==0.0.6
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+SQLAlchemy==2.0.29
+python-dotenv==1.0.1
 loguru==0.7.2
-requests==2.31.0
-aiofiles==23.2.1
-jinja2==3.1.2
-mangum==0.17.0
-redis==5.0.1
-prometheus-client==0.20.0
+greenlet==3.0.3
+
+# Authentication Dependencies
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Testing Dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# AI Enhancement Dependencies
+sentence-transformers==2.7.0
+scikit-learn==1.5.2
+numpy==1.26.4

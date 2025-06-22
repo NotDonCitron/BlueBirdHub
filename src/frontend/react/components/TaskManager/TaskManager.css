@@ -49,6 +49,59 @@
   background-color: #eff6ff;
 }
 
+/* Auto-check status indicator */
+.auto-check-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  margin: 10px 0 20px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.auto-check-status.success {
+  background-color: #dcfce7;
+  border: 1px solid #16a34a;
+  color: #15803d;
+}
+
+.auto-check-status.failed {
+  background-color: #fef2f2;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+}
+
+.auto-check-icon {
+  font-size: 16px;
+}
+
+.auto-check-message {
+  font-weight: 600;
+  flex: 1;
+}
+
+.auto-check-time {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.auto-check-retry {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.auto-check-retry:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 /* Overview Tab */
 .overview-tab {
   display: flex;

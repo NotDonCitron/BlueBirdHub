@@ -1,9 +1,9 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-const path = require('path')
-const ipcServer = require('../ipcServer')
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const ipcServer = require('../ipcServer');
 
 // Initialize IPC server
-ipcServer.init()
+ipcServer.init();
 
 let mainWindow;
 
@@ -42,13 +42,14 @@ function createWindow() {
 function registerIpcHandlers() {
   // IPC handlers for frontend-backend communication
   ipcMain.removeHandler('api-request');
-  ipcMain.handle('api-request', async (event, endpoint, method = 'GET', data = null) => {
+  ipcMain.handle('api-request', async (event, endpoint, method = 'GET', data = null, additionalHeaders = {}) => {
     try {
-      const url = `http://127.0.0.1:8001${endpoint}`;
+      const url = `http://127.0.0.1:8000${endpoint}`;
       const options = {
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          ...additionalHeaders
         }
       };
       

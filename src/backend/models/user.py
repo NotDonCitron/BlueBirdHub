@@ -20,6 +20,13 @@ class User(Base):
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
     suppliers = relationship("Supplier", back_populates="user", cascade="all, delete-orphan")
     
+    # Team and collaboration relationships
+    created_teams = relationship("Team", back_populates="creator", foreign_keys="Team.created_by")
+    team_memberships = relationship("TeamMembership", back_populates="user", foreign_keys="TeamMembership.user_id")
+    task_assignments = relationship("TaskAssignment", back_populates="assignee", foreign_keys="TaskAssignment.assigned_to")
+    workspace_activities = relationship("WorkspaceActivity", back_populates="user")
+    task_comments = relationship("TaskComment", back_populates="user")
+    
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}')>"
 

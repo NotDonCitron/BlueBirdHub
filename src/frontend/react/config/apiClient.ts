@@ -93,6 +93,16 @@ export class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
+  // Method to get progress stats
+  async getProgressStats<T>(): Promise<T> {
+    return this.get<T>(ENDPOINTS.PROGRESS_STATS);
+  }
+
+  // Method to get all searchable data
+  async getSearchableData<T>(): Promise<T> {
+    return this.get<T>(ENDPOINTS.SEARCHABLE_DATA);
+  }
+
   // Test and set optimal backend
   async initializeConnection(): Promise<void> {
     if (this.isTestingConnection) return;

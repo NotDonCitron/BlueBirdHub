@@ -1,28 +1,49 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ES6"],
-    "allowJs": true,
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "declaration": true,
-    "composite": true,
-    "incremental": true
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/frontend/react/*"],
+      "@components/*": ["src/frontend/react/components/*"],
+      "@lib/*": ["src/frontend/react/lib/*"],
+      "@types/*": ["src/frontend/react/types/*"],
+      "@hooks/*": ["src/frontend/react/hooks/*"],
+      "@utils/*": ["src/frontend/react/utils/*"],
+      "@styles/*": ["src/frontend/react/styles/*"]
+    }
   },
-  "files": [],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/web" },
-    { "path": "./packages/desktop" }
-  ]
+  "include": [
+    "src/frontend/react/**/*",
+    "index.html",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/frontend/main.js",
+    "src/frontend/preload.js"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

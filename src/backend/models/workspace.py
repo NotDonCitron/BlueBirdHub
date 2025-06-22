@@ -26,6 +26,11 @@ class Workspace(Base):
     tasks = relationship("Task", back_populates="workspace", cascade="all, delete-orphan")
     suppliers = relationship("Supplier", back_populates="workspace", cascade="all, delete-orphan")
     
+    # Collaboration relationships
+    shares = relationship("WorkspaceShare", back_populates="workspace", cascade="all, delete-orphan")
+    activities = relationship("WorkspaceActivity", back_populates="workspace", cascade="all, delete-orphan")
+    invites = relationship("WorkspaceInvite", back_populates="workspace", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Workspace(id={self.id}, name='{self.name}', theme='{self.theme}')>"
 

@@ -1,0 +1,12 @@
+# Minimal requirements to get the app working
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+SQLAlchemy==2.0.29
+python-dotenv==1.0.1
+loguru==0.7.2
+greenlet==3.0.3
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pytest==7.4.3
+httpx==0.25.2
+email-validator==2.2.0

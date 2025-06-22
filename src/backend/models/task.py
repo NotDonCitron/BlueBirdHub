@@ -43,6 +43,10 @@ class Task(Base):
     workspace = relationship("Workspace", back_populates="tasks")
     project = relationship("Project", back_populates="tasks")
     
+    # Collaboration relationships
+    assignments = relationship("TaskAssignment", back_populates="task", cascade="all, delete-orphan")
+    comments = relationship("TaskComment", back_populates="task", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Task(id={self.id}, title='{self.title}', status={self.status.value})>"
 

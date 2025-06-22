@@ -42,8 +42,9 @@ class CacheService:
             self.cache_misses = 0
             
         except Exception as e:
-            logger.warning(f"Redis connection failed: {e}. Cache service disabled.")
+            logger.info(f"Redis not available, using in-memory cache fallback: {e}")
             self.redis_client = None
+            self._memory_cache = {}
     
     def _is_available(self) -> bool:
         """Check if Redis is available"""

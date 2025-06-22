@@ -22,6 +22,9 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - AI_MODEL_PATH=/app/models
+      - ENABLE_SMART_ORGANIZATION=true
     volumes:
       - ordnungshub_data:/app/data
       - ordnungshub_uploads:/app/uploads

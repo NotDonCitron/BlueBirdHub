@@ -1,5 +1,4 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { errorLogger } from '../utils/errorLogger';
 
 interface Props {
   children: ReactNode;
@@ -9,142 +8,92 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-  errorId: string | null;
+  error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null,
-      errorId: null
-    };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    const errorId = `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    return {
-      hasError: true,
-      error,
-      errorInfo: null,
-      errorId
-    };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const { onError } = this.props;
-    const { errorId } = this.state;
-
-    // Log to our error tracking system
-    errorLogger.logError(error, {
-      componentStack: errorInfo.componentStack,
-      errorBoundary: true,
-      errorId,
-      timestamp: new Date().toISOString()
-    });
-
+    console.error('🚨 React Error Boundary caught an error:', error, errorInfo);
+    
+    this.setState({ error, errorInfo });
+    
     // Call custom error handler if provided
-    if (onError) {
-      onError(error, errorInfo);
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
     }
 
-    // Update state with error info
-    this.setState({
-      errorInfo
-    });
+    // Log to error tracking service (you can add your service here)
+    // Example: Sentry.captureException(error, { extra: errorInfo });
   }
 
-  handleReset = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-      errorId: null
-    });
-  };
-
   render() {
-    const { hasError, error, errorId } = this.state;
-    const { children, fallback } = this.props;
-
-    if (hasError && error) {
-      // Custom fallback provided
-      if (fallback) {
-        return <>{fallback}</>;
+    if (this.state.hasError) {
+      // Custom fallback UI
+      if (this.props.fallback) {
+        return this.props.fallback;
       }
 
-      // Default error UI
+      // Default fallback UI
       return (
-        <div className="error-boundary-container" style={{
+        <div style={{
           padding: '20px',
           margin: '20px',
-          border: '1px solid #ff6b6b',
+          border: '2px solid #ef4444',
           borderRadius: '8px',
-          backgroundColor: '#ffe0e0',
-          fontFamily: 'Arial, sans-serif'
+          backgroundColor: '#fef2f2',
+          color: '#dc2626'
         }}>
-          <h2 style={{ color: '#c92a2a', marginBottom: '10px' }}>
-            Etwas ist schiefgelaufen
-          </h2>
-          <p style={{ color: '#495057', marginBottom: '15px' }}>
-            Ein unerwarteter Fehler ist aufgetreten. Wir haben das Problem protokolliert und arbeiten daran.
-          </p>
-          <details style={{ marginBottom: '15px' }}>
-            <summary style={{ cursor: 'pointer', color: '#495057' }}>
-              Technische Details anzeigen
+          <h2>🚨 Something went wrong</h2>
+          <details style={{ whiteSpace: 'pre-wrap', marginTop: '10px' }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+              Error Details (click to expand)
             </summary>
-            <pre style={{
-              backgroundColor: '#f8f9fa',
-              padding: '10px',
-              borderRadius: '4px',
-              overflow: 'auto',
-              fontSize: '12px',
-              marginTop: '10px'
-            }}>
-              Error ID: {errorId}
-              {error.toString()}
-              {error.stack}
-            </pre>
+            <div style={{ marginTop: '10px', fontSize: '14px', fontFamily: 'monospace' }}>
+              <strong>Error:</strong> {this.state.error?.message}
+              <br />
+              <strong>Stack:</strong>
+              <pre style={{ marginTop: '5px', fontSize: '12px', overflow: 'auto' }}>
+                {this.state.error?.stack}
+              </pre>
+              {this.state.errorInfo && (
+                <>
+                  <strong>Component Stack:</strong>
+                  <pre style={{ marginTop: '5px', fontSize: '12px', overflow: 'auto' }}>
+                    {this.state.errorInfo.componentStack}
+                  </pre>
+                </>
+              )}
+            </div>
           </details>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={this.handleReset}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#087f5b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Erneut versuchen
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#868e96',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Seite neu laden
-            </button>
-          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '15px',
+              padding: '8px 16px',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Reload Page
+          </button>
         </div>
       );
     }
 
-    return children;
+    return this.props.children;
   }
 }
 

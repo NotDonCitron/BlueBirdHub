@@ -26,6 +26,7 @@ class WorkspacePermission(enum.Enum):
 class Team(Base):
     """Team model for organizing users into groups"""
     __tablename__ = "teams"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
@@ -48,6 +49,7 @@ class Team(Base):
 class TeamMembership(Base):
     """User membership in teams with roles"""
     __tablename__ = "team_memberships"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
@@ -59,12 +61,13 @@ class TeamMembership(Base):
     
     # Relationships
     team = relationship("Team", back_populates="memberships")
-    user = relationship("User", back_populates="team_memberships")
+    user = relationship("User", foreign_keys=[user_id], back_populates="team_memberships")
     inviter = relationship("User", foreign_keys=[invited_by])
 
 class WorkspaceShare(Base):
     """Workspace sharing with users and teams"""
     __tablename__ = "workspace_shares"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=False)
@@ -92,6 +95,7 @@ class WorkspaceShare(Base):
 class TaskAssignment(Base):
     """Task assignment to multiple users"""
     __tablename__ = "task_assignments"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
@@ -118,6 +122,7 @@ class TaskAssignment(Base):
 class WorkspaceActivity(Base):
     """Activity log for workspace collaboration"""
     __tablename__ = "workspace_activities"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=False)
@@ -129,7 +134,7 @@ class WorkspaceActivity(Base):
     entity_id = Column(Integer)
     
     created_at = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(Text)  # JSON for additional data
+    action_metadata = Column(Text)  # JSON for additional data
     
     # Relationships
     workspace = relationship("Workspace", back_populates="activities")
@@ -138,6 +143,7 @@ class WorkspaceActivity(Base):
 class TaskComment(Base):
     """Comments and collaboration on tasks"""
     __tablename__ = "task_comments"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
@@ -167,6 +173,7 @@ class TaskComment(Base):
 class WorkspaceInvite(Base):
     """Workspace invitation system"""
     __tablename__ = "workspace_invites"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(Integer, primary_key=True, index=True)
     workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=False)

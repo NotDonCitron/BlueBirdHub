@@ -4,10 +4,10 @@ export const API_CONFIG = {
   // In development: use direct backend URL
   BASE_URL: process.env.NODE_ENV === 'production' 
     ? '' // Relative URLs in production (nginx handles routing)
-    : (process.env.REACT_APP_API_URL || 'http://localhost:8000'),
+    : (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8002'),
   
   // Fallback for development only
-  MOCK_URL: 'http://localhost:8001',
+  MOCK_URL: 'http://127.0.0.1:8001',
   
   // Timeout settings
   TIMEOUT: 10000,
@@ -26,6 +26,8 @@ export const ENDPOINTS = {
   AI: '/ai',
   DASHBOARD: '/dashboard',
   FILES: '/files',
+  PROGRESS_STATS: '/api/progress/stats',
+  SEARCHABLE_DATA: '/api/searchable-data',
 };
 
 // Helper function to get full URL

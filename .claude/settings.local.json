@@ -80,7 +80,18 @@
       "Bash(rustc --version)",
       "Bash(go:*)",
       "Bash(git push:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(bash /mnt/c/Users/pasca/BlueBirdHub/test-all-functions.bat)",
+      "Bash(bash:*)",
+      "Bash(dos2unix:*)",
+      "Bash(sed:*)",
+      "Bash(./.venv/Scripts/python:*)",
+      "Bash(pgrep:*)",
+      "Bash(pip3 freeze:*)",
+      "Bash(pip3 list:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

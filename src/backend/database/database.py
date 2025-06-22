@@ -76,5 +76,9 @@ def init_db():
     Initialize the database by creating all tables.
     Should be called on application startup.
     """
-    from src.backend.models import user, workspace, task, file_metadata
+    # Import all model modules to register them with SQLAlchemy
+    from src.backend.models import (
+        user, workspace, task, file_metadata,
+        supplier, team  # Added missing modules
+    )
     Base.metadata.create_all(bind=engine)

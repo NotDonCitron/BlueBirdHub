@@ -1,49 +1,115 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const TerserPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+
+const isProduction = process.env.NODE_ENV === 'production';
+const shouldAnalyze = process.env.ANALYZE === 'true';
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/frontend/react/index.tsx',
+  entry: {
+    app: './src/frontend/react/index.tsx',
+  },
   
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: process.env.NODE_ENV === 'production' 
-      ? '[name].[contenthash].js' 
-      : '[name].js',
-    chunkFilename: process.env.NODE_ENV === 'production'
-      ? '[name].[contenthash].chunk.js'
-      : '[name].chunk.js',
+    filename: isProduction 
+      ? 'js/[name].[contenthash:8].js' 
+      : 'js/[name].js',
+    chunkFilename: isProduction
+      ? 'js/[name].[contenthash:8].chunk.js'
+      : 'js/[name].chunk.js',
+    assetModuleFilename: 'assets/[name].[contenthash:8][ext]',
     clean: true,
     publicPath: '/',
   },
   
   optimization: {
+    minimize: isProduction,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: isProduction,
+            drop_debugger: isProduction,
+            pure_funcs: isProduction ? ['console.log', 'console.info'] : [],
+          },
+          mangle: {
+            safari10: true,
+          },
+          format: {
+            comments: false,
+          },
+        },
+        extractComments: false,
+      }),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            'default',
+            {
+              discardComments: { removeAll: true },
+              normalizeWhitespace: true,
+            },
+          ],
+        },
+      }),
+    ],
     splitChunks: {
       chunks: 'all',
       cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-          priority: 10,
-        },
+        // React and React-DOM in separate chunk
         react: {
           test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
           name: 'react',
           chunks: 'all',
-          priority: 20,
+          priority: 30,
+          enforce: true,
         },
+        // React Router in separate chunk
+        router: {
+          test: /[\\/]node_modules[\\/]react-router/,
+          name: 'router',
+          chunks: 'all',
+          priority: 25,
+          enforce: true,
+        },
+        // Other vendor libraries
+        vendor: {
+          test: /[\\/]node_modules[\\/](?!(react|react-dom|react-router))/,
+          name: 'vendor',
+          chunks: 'all',
+          priority: 20,
+          maxSize: 244000, // ~240KB
+        },
+        // Common chunks between async components
         common: {
           name: 'common',
           minChunks: 2,
           chunks: 'all',
-          priority: 5,
+          priority: 10,
+          reuseExistingChunk: true,
+          maxSize: 244000,
+        },
+        // Default chunk
+        default: {
+          minChunks: 2,
+          priority: -20,
           reuseExistingChunk: true,
         },
       },
     },
+    runtimeChunk: {
+      name: 'runtime',
+    },
     usedExports: true,
     sideEffects: false,
+    providedExports: true,
+    concatenateModules: isProduction,
   },
   
   resolve: {
@@ -74,20 +140,40 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              modules: {
+                auto: true,
+                localIdentName: isProduction 
+                  ? '[hash:base64:8]'
+                  : '[name]__[local]--[hash:base64:5]',
+              },
+            },
+          },
+        ],
+        sideEffects: true,
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 8 * 1024, // 8KB - inline smaller images
+          },
+        },
         generator: {
-          filename: 'images/[name].[hash][ext]',
+          filename: 'images/[name].[contenthash:8][ext]',
         },
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource',
         generator: {
-          filename: 'fonts/[name].[hash][ext]',
+          filename: 'fonts/[name].[contenthash:8][ext]',
         },
       },
     ],
@@ -96,7 +182,9 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/frontend/react/public/index.html',
-      minify: process.env.NODE_ENV === 'production' ? {
+      inject: 'body',
+      scriptLoading: 'defer',
+      minify: isProduction ? {
         removeComments: true,
         collapseWhitespace: true,
         removeRedundantAttributes: true,
@@ -109,6 +197,44 @@ module.exports = {
         minifyURLs: true,
       } : false,
     }),
+    
+    // Extract CSS in production
+    ...(isProduction ? [
+      new MiniCssExtractPlugin({
+        filename: 'css/[name].[contenthash:8].css',
+        chunkFilename: 'css/[name].[contenthash:8].chunk.css',
+      }),
+    ] : []),
+    
+    // Compression for production
+    ...(isProduction ? [
+      new CompressionPlugin({
+        filename: '[path][base].gz',
+        algorithm: 'gzip',
+        test: /\.(js|css|html|svg)$/,
+        threshold: 8192,
+        minRatio: 0.8,
+      }),
+      new CompressionPlugin({
+        filename: '[path][base].br',
+        algorithm: 'brotliCompress',
+        test: /\.(js|css|html|svg)$/,
+        compressionOptions: {
+          level: 11,
+        },
+        threshold: 8192,
+        minRatio: 0.8,
+      }),
+    ] : []),
+    
+    // Bundle analyzer
+    ...(shouldAnalyze ? [
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        openAnalyzer: false,
+        reportFilename: 'bundle-report.html',
+      }),
+    ] : []),
   ],
   
   devServer: {
@@ -133,9 +259,12 @@ module.exports = {
     : 'eval-source-map',
   
   performance: {
-    hints: process.env.NODE_ENV === 'production' ? 'warning' : false,
-    maxEntrypointSize: 512000,
-    maxAssetSize: 512000,
+    hints: isProduction ? 'error' : false,
+    maxEntrypointSize: 244000, // 240KB target
+    maxAssetSize: 244000, // 240KB target
+    assetFilter: (assetFilename) => {
+      return !/(\.map$|\.gz$|\.br$)/.test(assetFilename);
+    },
   },
   
   stats: {

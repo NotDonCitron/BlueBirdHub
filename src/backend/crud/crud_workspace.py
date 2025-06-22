@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timezone
 
 from src.backend.crud.base import CRUDBase
@@ -17,9 +17,14 @@ class CRUDWorkspace(CRUDBase[Workspace, WorkspaceCreate, WorkspaceUpdate]):
         skip: int = 0, 
         limit: int = 100
     ) -> List[Workspace]:
-        """Get all workspaces for a specific user"""
+        """Get all workspaces for a specific user with eager loading"""
         return (
             db.query(self.model)
+            .options(
+                joinedload(Workspace.tasks),
+                joinedload(Workspace.files),
+                joinedload(Workspace.members)
+            )
             .filter(Workspace.user_id == user_id)
             .filter(Workspace.is_active == True)
             .order_by(Workspace.last_accessed_at.desc())

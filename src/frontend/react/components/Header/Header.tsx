@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
 interface HeaderProps {
@@ -25,6 +26,7 @@ const Header: React.FC<HeaderProps> = ({
   onSidebarToggle 
 }) => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -123,6 +125,18 @@ const Header: React.FC<HeaderProps> = ({
           <button className="header-action-btn" title="Help">
             ❓
           </button>
+          {user && (
+            <>
+              <span className="user-info">{user.username}</span>
+              <button 
+                className="header-action-btn logout-btn" 
+                title="Logout"
+                onClick={logout}
+              >
+                🚪
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

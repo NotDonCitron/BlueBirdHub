@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_
 from datetime import datetime, timedelta, timezone
 from src.backend.crud.base import CRUDBase
@@ -10,8 +10,19 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
     def get_by_user(
         self, db: Session, *, user_id: int, skip: int = 0, limit: int = 100
     ) -> List[Task]:
-        """Get tasks for a specific user"""
-        return db.query(Task).filter(Task.user_id == user_id).offset(skip).limit(limit).all()
+        """Get tasks for a specific user with eager loading"""
+        return (
+            db.query(Task)
+            .options(
+                joinedload(Task.workspace),
+                joinedload(Task.project),
+                joinedload(Task.subtasks)
+            )
+            .filter(Task.user_id == user_id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_by_workspace(
         self, db: Session, *, workspace_id: int, skip: int = 0, limit: int = 100

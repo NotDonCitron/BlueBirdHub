@@ -5,6 +5,7 @@ Provides basic text processing capabilities without heavy dependencies
 
 import re
 import json
+import os
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import asyncio
@@ -18,8 +19,13 @@ class LocalAIService:
     """
     
     def __init__(self):
-        self.executor = ThreadPoolExecutor(max_workers=2)
+        # Scale thread pool based on CPU cores
+        cpu_count = os.cpu_count() or 1
+        # Use 2x CPU cores for I/O bound tasks, with min 2, max 8
+        max_workers = min(max(cpu_count * 2, 2), 8)
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
         self._initialize_patterns()
+        logger.info(f"AI Service initialized with {max_workers} thread pool workers ({cpu_count} CPU cores detected)")
         
     def _initialize_patterns(self):
         """Initialize regex patterns for text analysis"""
@@ -316,6 +322,8 @@ class LocalAIService:
         return {
             'service': 'LocalAIService',
             'status': 'operational',
+            'thread_pool_workers': self.executor._max_workers,
+            'cpu_cores': os.cpu_count(),
             'capabilities': [
                 'text_analysis',
                 'entity_extraction', 
@@ -328,7 +336,8 @@ class LocalAIService:
                 'task_suggestions'
             ],
             'models': 'rule-based',
-            'privacy': 'fully_local'
+            'privacy': 'fully_local',
+            'performance': 'optimized_for_cpu_cores'
         }
 
 # Global service instance

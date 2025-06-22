@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - OrdnungsHub</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .offline-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .offline-title {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #4ade80;
+        }
+        
+        .offline-message {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .offline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .retry-button {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .offline-features {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .feature-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .connection-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .connection-status.online {
+            background: #4ade80;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .sync-indicator {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(251, 191, 36, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            display: none;
+        }
+        
+        .sync-indicator.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1 class="offline-title">Du bist offline</h1>
+        <p class="offline-message">
+            Keine Internetverbindung verfügbar. OrdnungsHub funktioniert auch offline mit eingeschränkten Features.
+        </p>
+        
+        <div class="offline-actions">
+            <button class="retry-button" onclick="retryConnection()">
+                <span class="connection-status" id="connection-status"></span>
+                Verbindung wiederherstellen
+            </button>
+        </div>
+        
+        <div class="offline-features">
+            <h3>📱 Verfügbare Offline-Features:</h3>
+            <div class="feature-item">
+                <span class="feature-icon">💾</span>
+                Cached Workspaces anzeigen
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📝</span>
+                Offline Tasks erstellen
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                Performance Metriken sammeln
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🔄</span>
+                Automatische Synchronisation bei Wiederverbindung
+            </div>
+        </div>
+        
+        <div class="sync-indicator" id="sync-indicator">
+            <strong>🔄 Synchronisiere Daten...</strong><br>
+            Ihre offline erstellten Inhalte werden jetzt synchronisiert.
+        </div>
+    </div>
+
+    <script>
+        let isOnline = navigator.onLine;
+        let syncInProgress = false;
+        
+        function updateConnectionStatus() {
+            const statusIndicator = document.getElementById('connection-status');
+            const retryButton = document.querySelector('.retry-button');
+            
+            if (isOnline) {
+                statusIndicator.classList.add('online');
+                retryButton.innerHTML = '<span class="connection-status online"></span>Online - Zur App zurückkehren';
+                
+                if (!syncInProgress) {
+                    triggerBackgroundSync();
+                }
+            } else {
+                statusIndicator.classList.remove('online');
+                retryButton.innerHTML = '<span class="connection-status"></span>Verbindung wiederherstellen';
+            }
+        }
+        
+        function retryConnection() {
+            if (isOnline) {
+                // Redirect back to main app
+                window.location.href = '/';
+            } else {
+                // Try to refresh or check connection
+                window.location.reload();
+            }
+        }
+        
+        function triggerBackgroundSync() {
+            if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+                syncInProgress = true;
+                const syncIndicator = document.getElementById('sync-indicator');
+                syncIndicator.classList.add('active');
+                
+                navigator.serviceWorker.ready.then(registration => {
+                    // Trigger background sync for different data types
+                    return Promise.all([
+                        registration.sync.register('workspace-sync'),
+                        registration.sync.register('task-sync'),
+                        registration.sync.register('performance-metrics')
+                    ]);
+                }).then(() => {
+                    console.log('Background sync registered');
+                    
+                    // Hide sync indicator after a delay
+                    setTimeout(() => {
+                        syncIndicator.classList.remove('active');
+                        syncInProgress = false;
+                    }, 3000);
+                }).catch(error => {
+                    console.error('Background sync registration failed:', error);
+                    syncIndicator.classList.remove('active');
+                    syncInProgress = false;
+                });
+            }
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            isOnline = true;
+            updateConnectionStatus();
+            console.log('Connection restored');
+        });
+        
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            updateConnectionStatus();
+            console.log('Connection lost');
+        });
+        
+        // Service Worker communication
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SYNC_COMPLETE') {
+                    const syncIndicator = document.getElementById('sync-indicator');
+                    syncIndicator.innerHTML = '<strong>✅ Synchronisation abgeschlossen!</strong><br>Alle offline Änderungen wurden übertragen.';
+                    
+                    setTimeout(() => {
+                        syncIndicator.classList.remove('active');
+                        syncInProgress = false;
+                    }, 2000);
+                }
+            });
+        }
+        
+        // Initialize
+        updateConnectionStatus();
+        
+        // Check connection periodically
+        setInterval(() => {
+            const wasOnline = isOnline;
+            isOnline = navigator.onLine;
+            
+            if (wasOnline !== isOnline) {
+                updateConnectionStatus();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

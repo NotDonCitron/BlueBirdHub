@@ -49,18 +49,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
-    // Function to create non-blocking notification
+    // Function to create non-blocking notification (XSS-safe)
     function showNotification(title, message, type = 'info') {
         // Create notification element instead of blocking alert
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-header">
-                <strong>${title}</strong>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="notification-body">${message}</div>
-        `;
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'notification-header';
+        
+        const titleElement = document.createElement('strong');
+        titleElement.textContent = title; // Safe from XSS
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => notification.remove());
+        
+        header.appendChild(titleElement);
+        header.appendChild(closeBtn);
+        
+        // Create body
+        const body = document.createElement('div');
+        body.className = 'notification-body';
+        body.textContent = message; // Safe from XSS
+        
+        notification.appendChild(header);
+        notification.appendChild(body);
         
         // Add to page
         document.body.appendChild(notification);

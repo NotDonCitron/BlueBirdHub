@@ -1,31 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
+import AuthenticatedApp from './components/AuthenticatedApp';
 import ErrorBoundary from './components/ErrorBoundary';
-import ErrorDashboard from './components/ErrorDashboard';
-import PerformanceDashboard from './components/PerformanceDashboard';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ApiProvider } from './contexts/ApiContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { performanceMonitor } from './utils/performanceMonitor';
+import { resourcePreloader } from './utils/resourcePreloader';
+import { preloadCriticalComponents } from './components/LazyComponents';
 import './styles/App.css';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [apiStatus, setApiStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
 
-  useEffect(() => {
-    // Check API connection on startup
-    checkApiConnection();
-    
+  const initializeApp = useCallback(async () => {
     // Start performance monitoring
     performanceMonitor.startContinuousMonitoring();
+    
+    // Preload critical resources
+    const resourceResults = await resourcePreloader.preloadCriticalResources();
+    console.log('Resource preload results:', resourceResults);
+    
+    // Preload critical components
+    preloadCriticalComponents();
+    
+    // Check API connection
+    await checkApiConnection();
+  }, []);
+
+  useEffect(() => {
+    initializeApp();
     
     return () => {
       performanceMonitor.dispose();
     };
-  }, []);
+  }, [initializeApp]);
 
-  const checkApiConnection = async () => {
+  const checkApiConnection = useCallback(async () => {
     try {
       // Add global object for browser compatibility
   (window as any).global = window;
@@ -54,7 +66,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -70,11 +82,11 @@ const App: React.FC = () => {
       <Router>
         <ThemeProvider>
           <ApiProvider apiStatus={apiStatus} onRetryConnection={checkApiConnection}>
-            <div className="app">
-              <Layout />
-              <ErrorDashboard />
-              <PerformanceDashboard />
-            </div>
+            <AuthProvider>
+              <div className="app">
+                <AuthenticatedApp />
+              </div>
+            </AuthProvider>
           </ApiProvider>
         </ThemeProvider>
       </Router>

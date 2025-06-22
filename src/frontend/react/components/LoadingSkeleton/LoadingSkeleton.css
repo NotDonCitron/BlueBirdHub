@@ -1,0 +1,549 @@
+.loading-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton-rect,
+.skeleton-circle {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+/* Dashboard Skeleton */
+.skeleton-dashboard {
+  padding: 20px;
+}
+
+.skeleton-header {
+  margin-bottom: 24px;
+}
+
+.skeleton-title {
+  height: 32px;
+  width: 300px;
+  margin-bottom: 8px;
+}
+
+.skeleton-subtitle {
+  height: 18px;
+  width: 200px;
+}
+
+.skeleton-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.skeleton-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.skeleton-stat-card .skeleton-circle {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.skeleton-stat-text {
+  height: 16px;
+  width: 120px;
+}
+
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-large {
+  height: 200px;
+  width: 100%;
+}
+
+.skeleton-medium {
+  height: 120px;
+  width: 70%;
+}
+
+.skeleton-small {
+  height: 80px;
+  width: 50%;
+}
+
+/* Workspace Skeleton */
+.skeleton-workspace {
+  padding: 20px;
+}
+
+.skeleton-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.skeleton-button {
+  height: 36px;
+  width: 100px;
+}
+
+.skeleton-search {
+  height: 36px;
+  width: 250px;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-workspace-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-card-header {
+  height: 24px;
+  width: 80%;
+}
+
+.skeleton-card-content {
+  height: 60px;
+  width: 100%;
+}
+
+.skeleton-card-footer {
+  height: 16px;
+  width: 60%;
+}
+
+/* Tasks Skeleton */
+.skeleton-tasks {
+  padding: 20px;
+}
+
+.skeleton-task-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.skeleton-filter,
+.skeleton-sort {
+  height: 36px;
+  width: 120px;
+}
+
+.skeleton-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.skeleton-checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.skeleton-task-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeleton-task-title {
+  height: 18px;
+  width: 300px;
+}
+
+.skeleton-task-meta {
+  height: 14px;
+  width: 150px;
+}
+
+.skeleton-priority {
+  height: 24px;
+  width: 60px;
+}
+
+/* Files Skeleton */
+.skeleton-files {
+  padding: 20px;
+}
+
+.skeleton-breadcrumb {
+  margin-bottom: 20px;
+}
+
+.skeleton-path {
+  height: 20px;
+  width: 400px;
+}
+
+.skeleton-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.skeleton-file-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.skeleton-file-name {
+  height: 16px;
+  width: 200px;
+  flex: 1;
+}
+
+.skeleton-file-size {
+  height: 14px;
+  width: 60px;
+}
+
+.skeleton-file-date {
+  height: 14px;
+  width: 100px;
+}
+
+/* Chat Skeleton */
+.skeleton-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.skeleton-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.skeleton-chat-title {
+  height: 20px;
+  width: 150px;
+}
+
+.skeleton-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+}
+
+.skeleton-message {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-message.user {
+  flex-direction: row-reverse;
+}
+
+.skeleton-message-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.skeleton-message-content {
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeleton-message-text {
+  height: 16px;
+  width: 250px;
+}
+
+.skeleton-message-text.short {
+  width: 150px;
+}
+
+.skeleton-input {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.skeleton-text-input {
+  flex: 1;
+  height: 40px;
+}
+
+.skeleton-send-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/* Collaboration Skeleton */
+.skeleton-collaboration {
+  padding: 20px;
+}
+
+.skeleton-participants {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.skeleton-participant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton-participant-avatar {
+  width: 48px;
+  height: 48px;
+}
+
+.skeleton-participant-name {
+  height: 14px;
+  width: 80px;
+}
+
+.skeleton-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.skeleton-activity-content {
+  height: 16px;
+  width: 300px;
+}
+
+.skeleton-activity-time {
+  height: 14px;
+  width: 80px;
+}
+
+/* Automation Skeleton */
+.skeleton-automation {
+  padding: 20px;
+}
+
+.skeleton-workflow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton-workflow {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.skeleton-workflow-title {
+  height: 24px;
+  width: 250px;
+  margin-bottom: 8px;
+}
+
+.skeleton-workflow-description {
+  height: 16px;
+  width: 400px;
+  margin-bottom: 16px;
+}
+
+.skeleton-workflow-steps {
+  display: flex;
+  gap: 12px;
+}
+
+.skeleton-step {
+  height: 32px;
+  width: 100px;
+}
+
+/* Content Assignment Skeleton */
+.skeleton-content-assignment {
+  padding: 20px;
+}
+
+.skeleton-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.skeleton-content-title {
+  height: 28px;
+  width: 300px;
+}
+
+.skeleton-content-status {
+  height: 24px;
+  width: 100px;
+}
+
+.skeleton-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-content-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-content-thumbnail {
+  height: 120px;
+  width: 100%;
+}
+
+.skeleton-content-name {
+  height: 18px;
+  width: 80%;
+}
+
+.skeleton-content-progress {
+  height: 8px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Default Skeleton */
+.skeleton-default {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .skeleton-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .skeleton-task-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .skeleton-message-content {
+    max-width: 90%;
+  }
+  
+  .skeleton-content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .skeleton-rect,
+  .skeleton-circle {
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+  }
+  
+  .skeleton-stat-card,
+  .skeleton-workspace-card,
+  .skeleton-task-item,
+  .skeleton-workflow,
+  .skeleton-content-item {
+    border-color: #404040;
+  }
+  
+  .skeleton-chat-header {
+    border-bottom-color: #404040;
+  }
+  
+  .skeleton-participants {
+    border-bottom-color: #404040;
+  }
+}

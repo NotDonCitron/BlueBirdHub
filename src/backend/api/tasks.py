@@ -10,9 +10,11 @@ from datetime import datetime
 
 from src.backend.database.database import get_db
 from src.backend.models.task import Task, TaskStatus, TaskPriority, Project
+from src.backend.models.user import User
 from src.backend.schemas.task import TaskCreate, TaskUpdate, TaskResponse
 from src.backend.services.taskmaster_integration import taskmaster_service
 from src.backend.services.ai_service import ai_service
+from src.backend.dependencies.auth import get_current_active_user
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -20,18 +22,19 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 async def get_tasks(
     skip: int = 0,
     limit: int = 100,
-    user_id: Optional[int] = None,
     workspace_id: Optional[int] = None,
     status: Optional[str] = None,
     priority: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Get tasks with optional filtering"""
     try:
         query = db.query(Task)
         
-        if user_id:
-            query = query.filter(Task.user_id == user_id)
+        # Security: Filter by current user only
+        query = query.filter(Task.user_id == current_user.id)
+        
         if workspace_id:
             query = query.filter(Task.workspace_id == workspace_id)
         if status:

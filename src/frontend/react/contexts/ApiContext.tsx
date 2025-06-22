@@ -7,7 +7,7 @@ interface ApiContextType {
   apiStatus: ApiStatus;
   setApiStatus: (status: ApiStatus) => void;
   retryConnection: () => void;
-  makeApiRequest: (endpoint: string, method?: string, data?: any) => Promise<any>;
+  makeApiRequest: (endpoint: string, method?: string, data?: any, headers?: Record<string, string>) => Promise<any>;
 }
 
 export const ApiContext = createContext<ApiContextType | undefined>(undefined);
@@ -30,11 +30,15 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
     onRetryConnection();
   };
 
-  const makeApiRequest = async (endpoint: string, method = 'GET', data?: any): Promise<any> => {
+  const makeApiRequest = async (endpoint: string, method = 'GET', data?: any, headers?: Record<string, string>): Promise<any> => {
     try {
+      // Get auth token from localStorage
+      const authToken = localStorage.getItem('auth_token');
+      const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+      
       if ((window as any).electronAPI) {
         // Use Electron API
-        return await (window as any).electronAPI.apiRequest(endpoint, method, data);
+        return await (window as any).electronAPI.apiRequest(endpoint, method, data, { ...authHeaders, ...headers });
       } else {
         // Use configured API URL (works in both dev and production)
         const url = getApiUrl(endpoint);
@@ -42,6 +46,8 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
           method,
           headers: {
             'Content-Type': 'application/json',
+            ...authHeaders,
+            ...headers
           },
         };
         

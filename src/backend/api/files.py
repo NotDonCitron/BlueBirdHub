@@ -23,6 +23,8 @@ from src.backend.schemas.file_metadata import (
     Tag, TagCreate, TagUpdate
 )
 from src.backend.services.ai_service import ai_service
+from src.backend.dependencies.auth import get_current_active_user
+from src.backend.models.user import User
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -163,11 +165,11 @@ def sanitize_filename(filename: str) -> str:
 async def upload_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user_id: int = Form(...),
     workspace_id: Optional[int] = Form(None),
     user_category: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),  # Comma-separated tags
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -183,7 +185,7 @@ async def upload_file(
     """
     try:
         # Log upload attempt
-        logger.info(f"File upload initiated: {file.filename} for user {user_id}")
+        logger.info(f"File upload initiated: {file.filename} for user {current_user.id}")
         
         # Get file size
         file.file.seek(0, 2)  # Seek to end
@@ -199,12 +201,20 @@ async def upload_file(
         # Sanitize filename
         safe_filename = sanitize_filename(file.filename)
         
-        # Create user upload directory
-        upload_base_dir = Path("uploads") / str(user_id)
+        # Create user upload directory with secure path handling
+        upload_base_dir = Path("uploads").resolve() / str(current_user.id)
         if workspace_id:
+            # Validate workspace_id is numeric to prevent path injection
+            if not isinstance(workspace_id, int) or workspace_id < 0:
+                raise HTTPException(status_code=400, detail="Invalid workspace ID")
             upload_dir = upload_base_dir / f"workspace_{workspace_id}"
         else:
             upload_dir = upload_base_dir / "general"
+        
+        # Ensure the path is within the expected directory (prevent path traversal)
+        upload_dir = upload_dir.resolve()
+        if not str(upload_dir).startswith(str(upload_base_dir)):
+            raise HTTPException(status_code=400, detail="Invalid upload path")
         
         upload_dir.mkdir(parents=True, exist_ok=True)
         
@@ -230,7 +240,7 @@ async def upload_file(
         file_hash = get_file_hash(str(file_path))
         
         # Check for duplicates
-        existing_file = crud_file.get_by_checksum(db, checksum=file_hash, user_id=user_id)
+        existing_file = crud_file.get_by_checksum(db, checksum=file_hash, user_id=current_user.id)
         if existing_file:
             # Remove uploaded file
             os.remove(file_path)

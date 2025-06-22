@@ -148,6 +148,20 @@
   color: var(--text-primary);
 }
 
+.user-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0 var(--spacing-sm);
+  border-left: 1px solid var(--border-color);
+  margin-left: var(--spacing-sm);
+}
+
+.logout-btn:hover {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .header {

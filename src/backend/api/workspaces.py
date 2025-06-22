@@ -9,6 +9,8 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 
 from src.backend.database.database import get_db
+from src.backend.models.user import User
+from src.backend.dependencies.auth import get_current_active_user
 from src.backend.models.workspace import Workspace, WorkspaceTheme
 from src.backend.schemas.workspace import (
     WorkspaceCreate, WorkspaceUpdate, WorkspaceResponse,
@@ -16,6 +18,10 @@ from src.backend.schemas.workspace import (
 )
 from src.backend.crud.crud_workspace import workspace as crud_workspace
 from src.backend.services.ai_service import ai_service
+from src.backend.services.cache_service import CacheService
+
+# Initialize cache service
+cache_service = CacheService()
 from src.backend.api.workspaces_enhanced import (
     get_workspace_template_context,
     calculate_enhanced_compatibility,
@@ -101,13 +107,51 @@ async def get_workspace_templates():
                 "ambient_sound": "meditation_sounds",
                 "features": ["Health tracking", "Meditation timer", "Wellness reminders", "Calming colors"],
                 "recommended_for": ["Health enthusiasts", "Wellness coaches", "Self-care focus"]
+            },
+            "suppliers": {
+                "name": "suppliers",
+                "display_name": "Lieferanten-Hub",
+                "description": "Comprehensive supplier management and price comparison workspace",
+                "theme": "professional",
+                "color": "#dc2626",
+                "icon": "🏪",
+                "default_widgets": ["supplier_overview", "price_comparison", "recent_communications", "document_manager", "quick_actions"],
+                "ambient_sound": "office_ambience",
+                "features": [
+                    "Supplier management", 
+                    "Price comparison engine", 
+                    "Document management", 
+                    "Communication tracking",
+                    "AI-powered price extraction",
+                    "Bulk import/export",
+                    "Performance analytics"
+                ],
+                "recommended_for": ["Procurement managers", "Small business owners", "Restaurant managers", "Retail buyers"],
+                "layout_config": {
+                    "grid_columns": 12,
+                    "grid_rows": 8,
+                    "widgets": {
+                        "supplier_overview": {"x": 0, "y": 0, "w": 6, "h": 3},
+                        "price_comparison": {"x": 6, "y": 0, "w": 6, "h": 3},
+                        "recent_communications": {"x": 0, "y": 3, "w": 4, "h": 3},
+                        "document_manager": {"x": 4, "y": 3, "w": 4, "h": 3},
+                        "quick_actions": {"x": 8, "y": 3, "w": 4, "h": 3}
+                    }
+                },
+                "special_features": {
+                    "ai_integration": true,
+                    "price_alerts": true,
+                    "bulk_operations": true,
+                    "export_capabilities": ["pdf", "excel", "csv"],
+                    "mobile_optimized": true
+                }
             }
         }
         
         return {
             "templates": templates,
             "total": len(templates),
-            "categories": ["productivity", "personal", "creative", "focus", "health"]
+            "categories": ["productivity", "personal", "creative", "focus", "health", "business"]
         }
         
     except Exception as e:
@@ -212,17 +256,30 @@ async def get_available_themes(db: Session = Depends(get_db)):
 async def get_workspaces(
     skip: int = 0,
     limit: int = 100,
-    user_id: Optional[int] = None,
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Get all workspaces for a user"""
+    """Get all workspaces for a user with caching"""
     try:
-        # Try to get workspaces from database
+        # Generate cache key
+        cache_key = cache_service._generate_key(
+            "workspaces", current_user.id, skip, limit
+        )
+        
+        # Try to get from cache first
+        cached_workspaces = await cache_service.get(cache_key)
+        if cached_workspaces:
+            logger.debug(f"Cache hit for user {current_user.id} workspaces")
+            return cached_workspaces
+        
+        # If not in cache, get from database
         try:
             workspaces = crud_workspace.get_multi_by_user(
-                db, user_id=user_id or 1, skip=skip, limit=limit
+                db, user_id=current_user.id, skip=skip, limit=limit
             )
             if workspaces:
+                # Cache the result for 5 minutes
+                await cache_service.set(cache_key, workspaces, ttl=300)
                 return workspaces
         except Exception as db_error:
             logger.warning(f"Database workspace fetch failed: {db_error}")
@@ -292,7 +349,8 @@ async def get_workspace(workspace_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=WorkspaceResponse)
 async def create_workspace(
     workspace: WorkspaceCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """Create a new workspace"""
     try:
@@ -307,6 +365,8 @@ async def create_workspace(
         
         # Create workspace with AI suggestions
         workspace_data = workspace.model_dump()
+        workspace_data["user_id"] = current_user.id  # Associate workspace with current user
+        
         if (not workspace_data.get("theme") or workspace_data.get("theme") == "default") and ai_suggestions.get("suggested_category"):
             # Map AI category to theme
             category_theme_map = {

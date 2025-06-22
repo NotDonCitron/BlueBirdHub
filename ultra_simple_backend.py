@@ -211,8 +211,13 @@ class CORSHandler(BaseHTTPRequestHandler):
             self._send_json_response(workspaces_storage)
         
         elif path.startswith('/workspaces/'):
-            workspace_id = int(path.split('/')[-1])
-            workspace = next((w for w in workspaces_storage if w["id"] == workspace_id), None)
+            workspace_id_str = path.split('/')[-1]
+            if workspace_id_str and workspace_id_str.isdigit():
+                workspace_id = int(workspace_id_str)
+                workspace = next((w for w in workspaces_storage if w["id"] == workspace_id), None)
+            else:
+                self._send_json_response({"error": "Invalid workspace ID"}, 400)
+                return
             if workspace:
                 self._send_json_response(workspace)
             else:

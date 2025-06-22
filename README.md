@@ -1,101 +1,196 @@
-# OrdnungsHub - AI-Powered System Organizer
+# 🚀 OrdnungsHub - AI-Powered System Organizer
 
-![CI Status](https://github.com/DonCitron/nnewcoededui/actions/workflows/ci.yml/badge.svg)
+> **Eine intelligente Desktop-Anwendung für Workspace-Management, Task-Organisation und Dokumentenverwaltung mit KI-Integration.**
 
-OrdnungsHub is an AI-powered desktop application designed to help users organize their digital workspace efficiently. It combines local AI processing with intelligent file management and system optimization tools.
+![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 
-## Project Structure
+## ✨ Features
 
-```
-ordnungshub/
-├── src/
-│   ├── backend/        # Python FastAPI backend
-│   ├── frontend/       # Electron frontend
-│   ├── core/          # Core application logic
-│   └── utils/         # Utility functions
-├── tests/             # Test files
-├── docs/              # Documentation
-├── resources/         # Static resources
-└── logs/              # Application logs
-```
+### 🎯 **Core Funktionalitäten**
+- **Workspace Management** - Organisiere Projekte in strukturierten Arbeitsbereichen
+- **Task Management** - Intelligente Aufgabenverwaltung mit KI-Unterstützung
+- **File Management** - Dokumentenverwaltung mit automatischer Kategorisierung
+- **AI Integration** - Unterstützung für multiple AI-Provider (OpenAI, Anthropic, Google)
 
-## Setup Instructions
+### 🔧 **Technische Features**
+- **Cross-Platform** - Desktop-App für Windows, macOS und Linux
+- **Real-time Updates** - Live-Synchronisation zwischen Frontend und Backend
+- **Performance Optimized** - Webpack-Bundle-Optimierung und Lazy Loading
+- **Comprehensive Testing** - Unit-, Integration- und E2E-Tests
+- **Authentication** - Sichere Benutzerauthentifizierung
 
-### Prerequisites
-- Python 3.8+
-- Node.js 16+
-- npm
+### 🎨 **User Experience**
+- **Modern UI** - React-basierte Benutzeroberfläche mit TypeScript
+- **Responsive Design** - Optimiert für verschiedene Bildschirmgrößen
+- **Dark/Light Theme** - Anpassbare Benutzeroberfläche
+- **Keyboard Shortcuts** - Effiziente Navigation
 
-### Backend Setup
-1. Create and activate Python virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+## 🛠️ Tech Stack
 
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### **Frontend**
+- **React 19** mit TypeScript
+- **Electron** für Desktop-Integration
+- **Webpack 5** für Module-Bundling
+- **CSS3** mit modernen Features
 
-### Frontend Setup
-1. Install Node.js dependencies:
-   ```bash
-   npm install
-   ```
+### **Backend**
+- **Python 3.10+** mit FastAPI
+- **SQLAlchemy** für Datenbankmanagement
+- **Alembic** für Datenbankmigrationen
+- **Pydantic** für Datenvalidierung
 
-## Running the Application
+### **Development Tools**
+- **Jest** für Unit-Testing
+- **Playwright** für E2E-Testing
+- **ESLint** für Code-Qualität
+- **Docker** für Containerisierung
 
-### Development Mode
-Run both backend and frontend in development mode:
+## 🚀 Quick Start
+
+### **Voraussetzungen**
 ```bash
+node >= 18.0.0
+python >= 3.10
+npm oder yarn
+```
+
+### **Installation**
+```bash
+# Repository klonen
+git clone https://github.com/NotDonCitron/BlueBirdHub.git
+cd BlueBirdHub
+
+# Dependencies installieren
+npm install
+pip install -r requirements.txt
+
+# Entwicklungsserver starten
 npm run dev
 ```
 
-Or run them separately:
-- Backend: `npm run dev:backend`
-- Frontend: `npm run dev:frontend`
-
-### Production Mode
+### **Verfügbare Scripts**
 ```bash
-npm start
+npm run dev          # Startet Backend, Frontend und Electron
+npm run dev:backend  # Nur Backend starten
+npm run dev:react    # Nur React-Frontend starten
+npm run build        # Production Build erstellen
+npm run test         # Tests ausführen
 ```
 
-## Testing
+## 📁 Projektstruktur
 
-### Python Tests
-```bash
-pytest
+```
+OrdnungsHub/
+├── src/
+│   ├── backend/          # Python FastAPI Backend
+│   │   ├── api/         # API Endpoints
+│   │   ├── models/      # Datenbankmodelle
+│   │   ├── services/    # Business Logic
+│   │   └── database/    # Datenbankonfiguration
+│   └── frontend/        # React Frontend
+│       ├── react/       # React-Komponenten
+│       ├── styles/      # CSS-Dateien
+│       └── utils/       # Utility-Funktionen
+├── tests/               # Test-Dateien
+├── docs/                # Dokumentation
+└── deploy/              # Deployment-Skripte
 ```
 
-### JavaScript Tests
-```bash
-npm test
+## 🔧 Konfiguration
+
+### **Umgebungsvariablen**
+Erstelle eine `.env`-Datei im Projektroot:
+
+```env
+# Database
+DATABASE_URL=sqlite:///./ordnungshub.db
+
+# API Keys (optional)
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+GOOGLE_API_KEY=your_google_key
+
+# Security
+SECRET_KEY=your_secret_key
+JWT_SECRET_KEY=your_jwt_secret
 ```
 
-## Architecture
+## 🧪 Testing
 
-- **Backend**: FastAPI (Python) - Handles AI processing, file management, and system operations
-- **Frontend**: Electron + HTML/CSS/JS - Provides the desktop application interface
-- **IPC**: Inter-process communication between Electron and Python backend
-- **Database**: SQLite for local data storage (to be implemented)
-- **AI**: Local transformer models for intelligent features (to be implemented)
+```bash
+# Alle Tests ausführen
+npm run test
 
-## Development Status
+# Nur Unit-Tests
+npm run test:unit
 
-Currently implemented:
-- ✅ Basic project structure
-- ✅ FastAPI backend with health check endpoint
-- ✅ Electron frontend with IPC communication
-- ✅ Basic UI with connection status
-- ✅ Development environment setup
+# Nur Integration-Tests
+npm run test:integration
 
-Next steps:
-- 🔄 Database layer implementation
-- 🔄 UI framework integration (React)
-- 🔄 Local AI model integration
-- 🔄 Core features implementation
+# E2E-Tests
+npm run test:e2e
 
-## License
+# Test-Coverage
+npm run test:coverage
+```
 
-MIT License - See LICENSE file for details
+## 📦 Deployment
+
+### **Production Build**
+```bash
+npm run build:prod
+```
+
+### **Docker**
+```bash
+docker-compose up -d
+```
+
+### **Electron App**
+```bash
+npm run build:electron
+```
+
+## 🤝 Contributing
+
+1. Fork das Repository
+2. Erstelle einen Feature-Branch (`git checkout -b feature/amazing-feature`)
+3. Committe deine Änderungen (`git commit -m 'Add amazing feature'`)
+4. Push zum Branch (`git push origin feature/amazing-feature`)
+5. Öffne eine Pull Request
+
+## 📝 Changelog
+
+### v0.1.0 (2025-01-22)
+- ✅ Initial Release
+- ✅ Basic Workspace Management
+- ✅ Task Management mit AI-Integration
+- ✅ File Upload und Management
+- ✅ Authentication System
+- ✅ Performance Optimierungen
+- ✅ Comprehensive Test Suite
+
+## 📄 License
+
+Dieses Projekt ist unter der MIT License lizenziert - siehe [LICENSE](LICENSE) für Details.
+
+## 🙏 Acknowledgments
+
+- React Team für das fantastische Framework
+- FastAPI für das schnelle Backend-Framework
+- Electron für die Desktop-Integration
+- Alle Open-Source-Contributors
+
+## 📞 Support
+
+Bei Fragen oder Problemen:
+- 📧 **Email**: support@ordnungshub.dev
+- 🐛 **Issues**: [GitHub Issues](https://github.com/NotDonCitron/BlueBirdHub/issues)
+- 📖 **Docs**: [Documentation](https://github.com/NotDonCitron/BlueBirdHub/docs)
+
+---
+
+**Entwickelt mit ❤️ für effiziente Workspace-Organisation**

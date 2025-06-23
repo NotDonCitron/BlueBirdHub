@@ -41,7 +41,7 @@ class ApiManager {
   private constructor() {
     this.config = {
       baseUrl: this.getFromEnv('REACT_APP_API_URL') || 'http://localhost:8000',
-      fallbackUrl: this.getFromEnv('REACT_APP_FALLBACK_API_URL') || 'http://localhost:8001',
+      fallbackUrl: this.getFromEnv('REACT_APP_FALLBACK_API_URL') || 'http://localhost:8000',
       timeout: parseInt(this.getFromEnv('REACT_APP_API_TIMEOUT') || '10000'),
       maxRetries: 3
     };

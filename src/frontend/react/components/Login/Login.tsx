@@ -26,9 +26,9 @@ const Login: React.FC = () => {
 
       const response = await apiClient.login(credentials);
 
-      if (response.token) {
+      if (response.access_token) {
         console.log('✅ Login successful, token received');
-        await login(response.token);
+        await login(response.access_token);
       } else {
         throw new Error('No token received from server');
       }

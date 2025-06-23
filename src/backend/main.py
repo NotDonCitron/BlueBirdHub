@@ -216,13 +216,13 @@ app = FastAPI(
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     
-    # Content Security Policy
+    # Content Security Policy - Allow CDN resources for Swagger UI
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "img-src 'self' data: https:; "
-        "font-src 'self'; "
+        "font-src 'self' https://cdn.jsdelivr.net; "
         "connect-src 'self'; "
         "frame-ancestors 'none'; "
         "form-action 'self'; "
@@ -243,13 +243,18 @@ async def add_security_headers(request: Request, call_next):
     return response
 
 # Configure CORS with restricted origins
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3002,http://127.0.0.1:3002,http://localhost:3001,http://127.0.0.1:3001,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173").split(",")
+
+# For development, be more permissive with CORS
+if os.getenv("NODE_ENV") != "production":
+    cors_origins = ["*"]  # Allow all origins in development
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,  # Restrict to configured origins
+    allow_origins=cors_origins,  # Allow all origins in development
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],  # Allow all headers in development
 )
 
 # Include routers
@@ -268,9 +273,10 @@ app.include_router(smart_organization_router)
 # Temporarily disabled until aiohttp is installed
 # app.include_router(mcp_router)
 
-# Setup custom Swagger UI and OpenAPI schema
+# Setup custom Swagger UI
 setup_custom_swagger_ui(app)
-app.openapi = lambda: get_openapi_schema(app)
+# Use default OpenAPI schema generation to avoid circular imports
+# app.openapi = lambda: get_openapi_schema(app)
 
 @app.get(
     "/",

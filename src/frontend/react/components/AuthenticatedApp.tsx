@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { LazyLayout, LazyErrorDashboard, LazyPerformanceDashboard } from './LazyComponents';
+import { WorkspaceManager, TaskManager } from './LazyComponents';
 import LoadingSkeleton from './LoadingSkeleton/LoadingSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import Login from './Login/Login';
@@ -21,11 +21,12 @@ const AuthenticatedApp: React.FC = () => {
   }
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <LazyLayout />
-      <LazyErrorDashboard />
-      <LazyPerformanceDashboard />
-    </Suspense>
+    <div data-testid="authenticated-app">
+      <Suspense fallback={<LoadingSkeleton />}>
+        <WorkspaceManager />
+        <TaskManager />
+      </Suspense>
+    </div>
   );
 };
 

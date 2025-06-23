@@ -20,7 +20,7 @@ class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
 
-  constructor(baseUrl: string = 'http://127.0.0.1:8002') {
+  constructor(baseUrl: string = 'http://127.0.0.1:8000') {
     this.baseUrl = baseUrl;
     this.token = localStorage.getItem('auth_token');
   }
@@ -91,14 +91,14 @@ class ApiClient {
 
   // Authentication
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>('/auth/login', {
+    const response = await this.request<LoginResponse>('/auth/login-json', {
       method: 'POST',
       body: JSON.stringify(credentials)
     });
 
-    if (response.token) {
-      this.token = response.token;
-      localStorage.setItem('auth_token', response.token);
+    if (response.access_token) {
+      this.token = response.access_token;
+      localStorage.setItem('auth_token', response.access_token);
     }
 
     return response;

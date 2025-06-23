@@ -12,6 +12,34 @@ node_modules/
 # Environment variables
 .env
 
+# Archive directory
+.archive/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Test environments
+venv_test/
+test_env/
+
+# Worktrees
+worktrees/
+
+# Backup files
+.git_backup/
+.claude-sync/
+
+# Demo files
+demo*.html
+*test*.html
+
 # Editor directories and files
 .idea
 .vscode

@@ -13,10 +13,13 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  success: boolean;
-  token: string;
-  message: string;
-  user: User;
+  access_token: string;
+  token_type: string;
+  // Legacy fields for backward compatibility
+  success?: boolean;
+  token?: string;
+  message?: string;
+  user?: User;
 }
 
 export interface User {

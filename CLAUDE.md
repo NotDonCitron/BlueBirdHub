@@ -51,5 +51,9 @@ Integration testing, documentation, and validation.
 - Follow the Red-Green-Refactor cycle during TDD phases
 - Document architectural decisions in memory for future reference
 - Regular security reviews for any authentication or data handling code
+- Always use /agent project framework to use multiple agents
+
+## MCP (Memory, Context, Perspective) Tools
+- Can suggest MCP tools that help us if possible
 
 For more information about SPARC methodology, see: https://github.com/ruvnet/claude-code-flow/docs/sparc.md

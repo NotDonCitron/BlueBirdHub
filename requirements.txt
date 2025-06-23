@@ -1,21 +1,45 @@
-# Core Dependencies for Cloud Deployment
-fastapi==0.110.0
-uvicorn[standard]==0.29.0
-SQLAlchemy==2.0.29
-python-dotenv==1.0.1
-loguru==0.7.2
-greenlet==3.0.3
+# OrdnungsHub Backend Dependencies
+# Core FastAPI and server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Database and ORM
+sqlalchemy>=2.0.36
+alembic>=1.14.0
+
+# Data validation and parsing
+pydantic>=2.10.0
+python-multipart>=0.0.12
+
+# Utilities
+loguru>=0.7.2
+requests>=2.32.0
+aiofiles>=24.1.0
+jinja2>=3.1.4
+psutil>=6.1.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# For serverless deployment (Netlify)
+mangum>=0.18.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
 
 # Authentication Dependencies
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
-# Testing Dependencies
-pytest==7.4.3
-pytest-asyncio==0.21.1
-httpx==0.25.2
-
 # AI Enhancement Dependencies
 sentence-transformers==2.7.0
 scikit-learn==1.5.2
 numpy==1.26.4
+
+# Additional Dependencies
+watchfiles
+websockets
+win32-setctime
+PyYAML
+discord.py

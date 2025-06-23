@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrdnungsHub Debug Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #1a1a1a; color: #fff; padding: 20px; 
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #00d4ff; margin-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { 
+            background: #2a2a2a; border-radius: 8px; padding: 20px; 
+            border: 1px solid #444; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card h3 { color: #00d4ff; margin-bottom: 15px; display: flex; align-items: center; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; }
+        .healthy { background: #0f5132; color: #75b798; }
+        .unhealthy { background: #842029; color: #f1aeb5; }
+        .info { background: #31525d; color: #9eeaf9; }
+        button { 
+            background: #007bff; color: white; border: none; padding: 8px 16px; 
+            border-radius: 4px; cursor: pointer; margin: 5px; 
+        }
+        button:hover { background: #0056b3; }
+        .log { 
+            background: #1e1e1e; border: 1px solid #444; padding: 10px; 
+            border-radius: 4px; max-height: 200px; overflow-y: auto; 
+            font-family: 'Courier New', monospace; font-size: 12px;
+        }
+        .timestamp { color: #888; font-size: 11px; }
+        .loading { text-align: center; color: #888; }
+        .error { color: #f1aeb5; }
+        .success { color: #75b798; }
+        .warning { color: #ffcc00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 OrdnungsHub Live Debug Dashboard</h1>
+            <p>Real-time monitoring of your localhost development environment</p>
+        </div>
+
+        <div class="grid">
+            <!-- Health Status -->
+            <div class="card">
+                <h3>🏥 Service Health <span id="health-status" class="status info">Checking...</span></h3>
+                <div id="health-results" class="loading">Loading health data...</div>
+                <button onclick="checkHealth()">Refresh Health</button>
+                <button onclick="toggleAutoRefresh()">Auto Refresh: <span id="auto-status">OFF</span></button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3>⚡ Quick Actions</h3>
+                <button onclick="openFrontend()">🌐 Open Frontend</button>
+                <button onclick="openBackendDocs()">📚 API Docs</button>
+                <button onclick="startMonitoring()">📊 Start Monitoring</button>
+                <button onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+            </div>
+
+            <!-- Live Logs -->
+            <div class="card">
+                <h3>📝 Debug Log</h3>
+                <div id="debug-log" class="log">
+                    <div class="timestamp">[Starting debug session...]</div>
+                </div>
+                <button onclick="clearLog()">Clear Log</button>
+            </div>
+
+            <!-- WebSocket Status -->
+            <div class="card">
+                <h3>🔗 WebSocket Connection <span id="ws-status" class="status info">Connecting...</span></h3>
+                <div id="ws-info">Attempting to connect to ws://localhost:3005</div>
+                <button onclick="connectWebSocket()">Reconnect</button>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="card">
+                <h3>⚡ Performance</h3>
+                <div id="performance-data">
+                    <div>Frontend Response: <span id="frontend-perf" class="warning">Checking...</span></div>
+                    <div>Backend Response: <span id="backend-perf" class="success">Fast</span></div>
+                    <div>Last Check: <span id="last-check" class="timestamp">Never</span></div>
+                </div>
+            </div>
+
+            <!-- MCP Server Status -->
+            <div class="card">
+                <h3>🤖 MCP Debug Server</h3>
+                <div id="mcp-status">
+                    <div>Server: <span class="success">Running on :3004</span></div>
+                    <div>WebSocket: <span class="warning">Port :3005</span></div>
+                    <div>Features: Health, Screenshots, Logs, Performance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let autoRefresh = false;
+        let autoRefreshInterval = null;
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:3005');
+                
+                ws.onopen = function() {
+                    updateWsStatus('Connected', 'healthy');
+                    logMessage('✅ WebSocket connected to debug server');
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+                
+                ws.onclose = function() {
+                    updateWsStatus('Disconnected', 'unhealthy');
+                    logMessage('❌ WebSocket disconnected');
+                };
+                
+                ws.onerror = function() {
+                    updateWsStatus('Error', 'unhealthy');
+                    logMessage('⚠️ WebSocket connection error');
+                };
+            } catch (error) {
+                updateWsStatus('Failed', 'unhealthy');
+                logMessage('❌ Failed to connect WebSocket: ' + error.message);
+            }
+        }
+
+        function updateWsStatus(status, type) {
+            const statusEl = document.getElementById('ws-status');
+            statusEl.textContent = status;
+            statusEl.className = 'status ' + type;
+            document.getElementById('ws-info').textContent = 
+                type === 'healthy' ? 'Real-time debugging active' : 'Connection issues detected';
+        }
+
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'health-check':
+                case 'auto-monitor':
+                    updateHealthDisplay(data.data.health || data.data);
+                    break;
+                case 'console-logs':
+                    logMessage('📝 Console logs captured: ' + data.data.logs.length + ' entries');
+                    break;
+                case 'performance-audit':
+                    logMessage('⚡ Performance audit: ' + data.data.loadTime);
+                    break;
+                default:
+                    logMessage('📡 Debug update: ' + data.type);
+            }
+        }
+
+        // Health Check Functions
+        async function checkHealth() {
+            try {
+                const response = await fetch('http://localhost:3004/health-check');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateHealthDisplay(data.results);
+                    logMessage('✅ Health check completed');
+                } else {
+                    logMessage('❌ Health check failed');
+                }
+            } catch (error) {
+                logMessage('❌ Cannot reach debug server: ' + error.message);
+                document.getElementById('health-results').innerHTML = 
+                    '<div class="error">Debug server unreachable</div>';
+            }
+        }
+
+        function updateHealthDisplay(results) {
+            const container = document.getElementById('health-results');
+            let html = '';
+            let allHealthy = true;
+
+            results.forEach(result => {
+                const statusClass = result.status === 'healthy' ? 'success' : 'error';
+                const icon = result.status === 'healthy' ? '✅' : '❌';
+                
+                if (result.status !== 'healthy') allHealthy = false;
+                
+                html += `
+                    <div>
+                        ${icon} <strong>${result.name}</strong>
+                        <span class="${statusClass}">
+                            ${result.status === 'healthy' ? 
+                                result.responseTime : 
+                                result.error || 'Unknown error'
+                            }
+                        </span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            
+            const healthStatus = document.getElementById('health-status');
+            healthStatus.textContent = allHealthy ? 'All Healthy' : 'Issues Detected';
+            healthStatus.className = 'status ' + (allHealthy ? 'healthy' : 'unhealthy');
+
+            document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Auto Refresh
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const button = document.getElementById('auto-status');
+            
+            if (autoRefresh) {
+                button.textContent = 'ON';
+                autoRefreshInterval = setInterval(checkHealth, 10000);
+                logMessage('🔄 Auto-refresh enabled (10s interval)');
+            } else {
+                button.textContent = 'OFF';
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                logMessage('⏸️ Auto-refresh disabled');
+            }
+        }
+
+        // Monitoring Functions
+        async function startMonitoring() {
+            try {
+                const response = await fetch('http://localhost:3004/start-monitoring', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interval: 15000 })
+                });
+                const data = await response.json();
+                logMessage('📊 ' + data.message);
+            } catch (error) {
+                logMessage('❌ Failed to start monitoring: ' + error.message);
+            }
+        }
+
+        async function stopMonitoring() {
+            try {
+                const response = await fetch('http://localhost:3004/stop-monitoring', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                logMessage('⏹️ ' + data.message);
+            } catch (error) {
+                logMessage('❌ Failed to stop monitoring: ' + error.message);
+            }
+        }
+
+        // Quick Actions
+        function openFrontend() {
+            window.open('http://localhost:3002', '_blank');
+            logMessage('🌐 Opening frontend in new tab');
+        }
+
+        function openBackendDocs() {
+            window.open('http://127.0.0.1:8001/docs', '_blank');
+            logMessage('📚 Opening API documentation');
+        }
+
+        // Logging
+        function logMessage(message) {
+            const log = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = 
+                '<div class="timestamp">[Log cleared]</div>';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('🚀 Debug dashboard initialized');
+            connectWebSocket();
+            checkHealth();
+        });
+    </script>
+</body>
+</html>

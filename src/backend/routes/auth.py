@@ -16,6 +16,12 @@ from src.backend.services.auth import (
     TokenData,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+from pydantic import BaseModel
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
 from src.backend.models.user import User
 
 router = APIRouter(
@@ -244,6 +250,31 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         ```
     """
     user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+# Additional JSON login endpoint for frontend compatibility
+@router.post(
+    "/login-json",
+    response_model=Token,
+    summary="Login with JSON",
+    description="Alternative login endpoint that accepts JSON instead of form data"
+)
+async def login_json(login_data: LoginRequest, db: Session = Depends(get_db)):
+    """Login with JSON payload instead of form data"""
+    user = authenticate_user(db, login_data.username, login_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

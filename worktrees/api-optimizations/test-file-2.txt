@@ -1,2 +1,0 @@
-Test file for drag and drop functionality - File 2
-This is another test file for testing multiple file drag and drop.

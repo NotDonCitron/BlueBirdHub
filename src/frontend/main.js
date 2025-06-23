@@ -44,7 +44,7 @@ function registerIpcHandlers() {
   ipcMain.removeHandler('api-request');
   ipcMain.handle('api-request', async (event, endpoint, method = 'GET', data = null, additionalHeaders = {}) => {
     try {
-      const url = `http://127.0.0.1:8000${endpoint}`;
+      const url = `http://127.0.0.1:8002${endpoint}`;
       const options = {
         method: method,
         headers: {

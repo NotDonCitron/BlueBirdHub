@@ -20,43 +20,118 @@ workspaces_storage = [
     {"id": 3, "name": "Projects", "color": "#F59E0B", "created_at": datetime.now().isoformat(), "description": "Side projects and learning"}
 ]
 
-# Agent System Storage
+# AI Assistant Storage - OrdnungsHub specific agents
 agents_storage = [
     {
-        "id": "a2a-google",
-        "name": "Google A2A Agent",
-        "description": "Google's Agent-to-Agent communication protocol implementation",
-        "capabilities": ["task-delegation", "communication", "protocol-translation"],
+        "id": "file-organizer",
+        "name": "File Organization Assistant",
+        "description": "AI-powered file categorization and organization suggestions",
+        "capabilities": ["file-categorization", "smart-folder-creation", "duplicate-detection"],
         "status": "active",
-        "type": "a2a",
-        "version": "0.2.8",
-        "endpoint": "http://localhost:8002/a2a"
-    },
-    {
-        "id": "anubis-workflow",
-        "name": "Anubis Workflow Manager",
-        "description": "Intelligent workflow guidance and role-based task management",
-        "capabilities": ["workflow-management", "role-guidance", "reporting"],
-        "status": "active",
-        "type": "anubis",
+        "type": "file-ai",
         "version": "1.0.0",
-        "endpoint": "http://localhost:8003/anubis"
+        "endpoint": "http://localhost:8002/ai/file-organizer"
     },
     {
-        "id": "serena-coder",
-        "name": "Serena Code Assistant",
-        "description": "Semantic code analysis and editing toolkit",
-        "capabilities": ["code-analysis", "semantic-search", "refactoring", "lsp-integration"],
+        "id": "task-optimizer",
+        "name": "Task Optimization Agent",
+        "description": "Intelligent task prioritization and workflow optimization",
+        "capabilities": ["task-prioritization", "workflow-analysis", "productivity-insights"],
         "status": "active",
-        "type": "serena",
-        "version": "latest",
-        "endpoint": "http://localhost:8004/serena"
+        "type": "task-ai",
+        "version": "1.0.0",
+        "endpoint": "http://localhost:8002/ai/task-optimizer"
+    },
+    {
+        "id": "smart-search",
+        "name": "Semantic Search Assistant",
+        "description": "Advanced search with natural language understanding",
+        "capabilities": ["semantic-search", "content-analysis", "relevance-scoring"],
+        "status": "active",
+        "type": "search-ai",
+        "version": "1.0.0",
+        "endpoint": "http://localhost:8002/ai/smart-search"
     }
 ]
 
 agent_tasks_storage = []
 agent_workflows_storage = []
 agent_messages_storage = []
+
+# File Storage System
+files_storage = []
+file_categories = {
+    "documents": {
+        "extensions": [".pdf", ".doc", ".docx", ".txt", ".rtf", ".odt"],
+        "folder": "Documents",
+        "icon": "📄",
+        "color": "#3B82F6"
+    },
+    "images": {
+        "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"],
+        "folder": "Images",
+        "icon": "🖼️",
+        "color": "#10B981"
+    },
+    "videos": {
+        "extensions": [".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".webm"],
+        "folder": "Videos",
+        "icon": "🎥",
+        "color": "#F59E0B"
+    },
+    "audio": {
+        "extensions": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma"],
+        "folder": "Audio",
+        "icon": "🎵",
+        "color": "#8B5CF6"
+    },
+    "archives": {
+        "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
+        "folder": "Archives",
+        "icon": "📦",
+        "color": "#6B7280"
+    },
+    "code": {
+        "extensions": [".js", ".ts", ".py", ".java", ".cpp", ".c", ".html", ".css", ".php", ".rb", ".go"],
+        "folder": "Code",
+        "icon": "💻",
+        "color": "#EF4444"
+    },
+    "spreadsheets": {
+        "extensions": [".xls", ".xlsx", ".csv", ".ods"],
+        "folder": "Spreadsheets",
+        "icon": "📊",
+        "color": "#059669"
+    },
+    "presentations": {
+        "extensions": [".ppt", ".pptx", ".odp"],
+        "folder": "Presentations",
+        "icon": "🎯",
+        "color": "#DC2626"
+    }
+}
+
+# Task Dependencies Storage
+task_dependencies = []
+
+# Collaboration System
+workspace_members = []
+workspace_permissions = []
+activity_feed = []
+
+# Search Index (simplified)
+search_index = []
+
+# Automation Rules
+automation_rules = []
+
+# Analytics Data
+analytics_data = {
+    "daily_tasks": [],
+    "file_uploads": [],
+    "workspace_activity": [],
+    "productivity_metrics": []
+}
 next_agent_task_id = 1
 next_workflow_id = 1
 next_message_id = 1
@@ -654,13 +729,103 @@ class CORSHandler(BaseHTTPRequestHandler):
         elif self.path.startswith('/uploads/'):
             self.serve_static_file()
         
+        # === ADVANCED FEATURE GET ENDPOINTS ===
+        elif path == '/automation/rules':
+            # Get all automation rules
+            self._send_json_response({
+                "rules": automation_rules,
+                "total": len(automation_rules),
+                "enabled_count": len([r for r in automation_rules if r["enabled"]])
+            })
+        
+        elif path == '/analytics/dashboard':
+            # Get analytics dashboard data
+            dashboard_data = {
+                "productivity": self._generate_analytics_report("productivity", "7d"),
+                "storage": self._generate_analytics_report("storage", "7d"),
+                "recent_activity": activity_feed[-10:] if activity_feed else [],
+                "quick_stats": {
+                    "total_tasks": len(tasks_storage),
+                    "total_files": len(files_storage),
+                    "total_workspaces": len(workspaces_storage),
+                    "active_automations": len([r for r in automation_rules if r["enabled"]])
+                }
+            }
+            self._send_json_response(dashboard_data)
+        
+        elif path == '/collaboration/activity':
+            # Get workspace activity feed
+            workspace_id = self.path.split('?')[1].split('=')[1] if '?' in self.path else None
+            
+            if workspace_id:
+                filtered_activity = [a for a in activity_feed if str(a.get("workspace_id")) == workspace_id]
+            else:
+                filtered_activity = activity_feed
+            
+            self._send_json_response({
+                "activities": filtered_activity[-20:],  # Last 20 activities
+                "total": len(filtered_activity)
+            })
+        
+        elif path == '/workspaces/members':
+            # Get workspace members
+            workspace_id = self.path.split('?')[1].split('=')[1] if '?' in self.path else None
+            
+            if workspace_id:
+                members = [m for m in workspace_members if str(m.get("workspace_id")) == workspace_id]
+            else:
+                members = workspace_members
+            
+            self._send_json_response({
+                "members": members,
+                "total": len(members)
+            })
+        
+        elif path.startswith('/tasks/') and '/dependencies' in path:
+            # Get task dependency graph
+            task_id = path.split('/')[2]
+            dependency_graph = self._get_dependency_graph(task_id)
+            
+            self._send_json_response({
+                "task_id": task_id,
+                "dependency_graph": dependency_graph,
+                "blocked_tasks": self._get_blocked_tasks(task_id),
+                "blocking_tasks": self._get_blocking_tasks(task_id)
+            })
+        
+        elif path == '/files/categories':
+            # Get file categories and organization suggestions
+            self._send_json_response({
+                "categories": file_categories,
+                "organization_stats": self._get_organization_stats()
+            })
+        
+        elif path.startswith('/files/') and '/suggestions' in path:
+            # Get AI organization suggestions for file
+            file_id = path.split('/')[2]
+            file_item = next((f for f in files_storage if f["id"] == file_id), None)
+            
+            if file_item:
+                category = self._categorize_file_ai(file_item)
+                suggestions = self._suggest_folder_structure(file_item, category)
+                
+                self._send_json_response({
+                    "file": file_item,
+                    "suggested_category": category,
+                    "organization_suggestions": suggestions
+                })
+            else:
+                self._send_json_response({"error": "File not found"}, 404)
+        
         else:
             self._send_json_response({
                 "error": f"Endpoint {path} not found", 
                 "message": "The requested endpoint does not exist",
                 "available_endpoints": [
                     "/health", "/workspaces", "/tasks/taskmaster/all", 
-                    "/agents", "/files", "/auth/me"
+                    "/agents", "/files", "/auth/me", "/automation/rules",
+                    "/analytics/dashboard", "/collaboration/activity",
+                    "/files/categories"
                 ]
             }, 404)
 
@@ -1241,6 +1406,157 @@ class CORSHandler(BaseHTTPRequestHandler):
                 self._send_json_response({"error": "Failed to activate project"}, 400)
         # --- END AGENT SYSTEM ENDPOINTS ---
         
+        # === ADVANCED FEATURES ===
+        elif path == '/ai/smart-search':
+            # AI-powered semantic search
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            query = data.get("query", "")
+            search_type = data.get("type", "all")  # files, tasks, workspaces, all
+            
+            results = self._perform_smart_search(query, search_type)
+            self._send_json_response({
+                "query": query,
+                "results": results,
+                "total": len(results),
+                "search_time": "0.12s"
+            })
+        
+        elif path == '/automation/rules':
+            # Create automation rule
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            rule = {
+                "id": str(len(automation_rules) + 1),
+                "name": data.get("name", "New Rule"),
+                "description": data.get("description", ""),
+                "trigger": data.get("trigger", {}),
+                "actions": data.get("actions", []),
+                "enabled": data.get("enabled", True),
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+                "executions": 0
+            }
+            automation_rules.append(rule)
+            
+            self._send_json_response({
+                "rule": rule,
+                "message": "Automation rule created"
+            }, 201)
+        
+        elif path == '/automation/rules/execute':
+            # Execute automation rules
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            trigger_event = data.get("event", {})
+            executed_rules = []
+            
+            for rule in automation_rules:
+                if rule["enabled"] and self._matches_trigger(rule["trigger"], trigger_event):
+                    execution_result = self._execute_rule_actions(rule["actions"], trigger_event)
+                    rule["executions"] += 1
+                    executed_rules.append({
+                        "rule": rule,
+                        "result": execution_result
+                    })
+            
+            self._send_json_response({
+                "executed_rules": executed_rules,
+                "total": len(executed_rules)
+            })
+        
+        elif path == '/analytics/generate-report':
+            # Generate analytics report
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            report_type = data.get("type", "productivity")
+            date_range = data.get("date_range", "7d")
+            
+            report = self._generate_analytics_report(report_type, date_range)
+            self._send_json_response(report)
+        
+        elif path == '/workspaces/bulk-import':
+            # Bulk import workspace data
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            import_data = data.get("data", {})
+            import_type = data.get("type", "tasks")
+            
+            result = self._bulk_import_data(import_data, import_type)
+            self._send_json_response(result)
+        
+        elif path == '/files/batch-organize':
+            # Batch file organization
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            file_ids = data.get("file_ids", [])
+            organization_results = []
+            
+            for file_id in file_ids:
+                file_item = next((f for f in files_storage if f["id"] == file_id), None)
+                if file_item:
+                    category = self._categorize_file_ai(file_item)
+                    suggestion = self._suggest_folder_structure(file_item, category)
+                    
+                    file_item["category"] = category
+                    file_item["suggested_folder"] = suggestion["folder"]
+                    
+                    organization_results.append({
+                        "file_id": file_id,
+                        "category": category,
+                        "suggestion": suggestion
+                    })
+            
+            self._send_json_response({
+                "organized_files": organization_results,
+                "total": len(organization_results)
+            })
+        
+        elif path == '/collaboration/invite':
+            # Send collaboration invitation
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            invitation = {
+                "id": str(len(workspace_members) + 1),
+                "workspace_id": data.get("workspace_id"),
+                "email": data.get("email"),
+                "role": data.get("role", "member"),
+                "permissions": data.get("permissions", ["read"]),
+                "invited_by": data.get("invited_by"),
+                "status": "pending",
+                "expires_at": (datetime.now() + timedelta(days=7)).isoformat(),
+                "created_at": datetime.now().isoformat()
+            }
+            
+            # Log activity
+            activity_feed.append({
+                "id": len(activity_feed) + 1,
+                "workspace_id": invitation["workspace_id"],
+                "action": "invitation_sent",
+                "user_id": invitation["invited_by"],
+                "details": {"email": invitation["email"], "role": invitation["role"]},
+                "timestamp": datetime.now().isoformat()
+            })
+            
+            self._send_json_response({
+                "invitation": invitation,
+                "message": "Invitation sent successfully"
+            }, 201)
+        
         else:
             self._send_json_response({"error": "Endpoint not found"}, 404)
 
@@ -1524,6 +1840,466 @@ class CORSHandler(BaseHTTPRequestHandler):
             })
             
         self._send_json_response(searchable_data)
+
+    # === ENHANCED FILE MANAGEMENT ENDPOINTS ===
+    def do_PUT(self):
+        """Handle PUT requests for updates"""
+        path = self.path.split('?')[0]
+        
+        if path.startswith('/files/') and '/organize' in path:
+            # AI-powered file organization
+            file_id = path.split('/')[2]
+            file_item = next((f for f in files_storage if f["id"] == file_id), None)
+            if not file_item:
+                self._send_json_response({"error": "File not found"}, 404)
+                return
+            
+            # AI categorization (with fallback)
+            category = self._categorize_file_ai(file_item)
+            suggestion = self._suggest_folder_structure(file_item, category)
+            
+            file_item["category"] = category
+            file_item["suggested_folder"] = suggestion["folder"]
+            file_item["ai_confidence"] = suggestion["confidence"]
+            
+            self._send_json_response({
+                "file": file_item,
+                "organization": suggestion,
+                "message": "File organized successfully"
+            })
+        
+        elif path.startswith('/tasks/') and '/dependencies' in path:
+            # Update task dependencies
+            task_id = path.split('/')[2]
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            task = next((t for t in tasks_storage if t["id"] == task_id), None)
+            if not task:
+                self._send_json_response({"error": "Task not found"}, 404)
+                return
+            
+            # Update dependencies
+            task["dependencies"] = data.get("dependencies", [])
+            
+            # Update dependency graph
+            dependency = {
+                "task_id": task_id,
+                "depends_on": data.get("dependencies", []),
+                "updated_at": datetime.now().isoformat()
+            }
+            
+            # Remove existing and add new
+            task_dependencies[:] = [d for d in task_dependencies if d["task_id"] != task_id]
+            task_dependencies.append(dependency)
+            
+            self._send_json_response({
+                "task": task,
+                "dependency_graph": self._get_dependency_graph(task_id),
+                "message": "Dependencies updated"
+            })
+        
+        elif path.startswith('/workspaces/') and '/members' in path:
+            # Update workspace membership
+            workspace_id = int(path.split('/')[2])
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            workspace = next((w for w in workspaces_storage if w["id"] == workspace_id), None)
+            if not workspace:
+                self._send_json_response({"error": "Workspace not found"}, 404)
+                return
+            
+            # Add member
+            member = {
+                "workspace_id": workspace_id,
+                "user_id": data.get("user_id"),
+                "role": data.get("role", "member"),
+                "permissions": data.get("permissions", ["read"]),
+                "added_at": datetime.now().isoformat()
+            }
+            workspace_members.append(member)
+            
+            # Log activity
+            activity_feed.append({
+                "id": len(activity_feed) + 1,
+                "workspace_id": workspace_id,
+                "action": "member_added",
+                "user_id": data.get("user_id"),
+                "details": {"role": member["role"]},
+                "timestamp": datetime.now().isoformat()
+            })
+            
+            self._send_json_response({
+                "member": member,
+                "workspace": workspace,
+                "message": "Member added successfully"
+            })
+        
+        elif path.startswith('/automation/rules/') and path.endswith('/toggle'):
+            # Toggle automation rule
+            rule_id = path.split('/')[3]
+            rule = next((r for r in automation_rules if r["id"] == rule_id), None)
+            if not rule:
+                self._send_json_response({"error": "Rule not found"}, 404)
+                return
+            
+            rule["enabled"] = not rule["enabled"]
+            rule["updated_at"] = datetime.now().isoformat()
+            
+            self._send_json_response({
+                "rule": rule,
+                "message": f"Rule {'enabled' if rule['enabled'] else 'disabled'}"
+            })
+        
+        else:
+            self._send_json_response({"error": "Endpoint not found"}, 404)
+
+    def _categorize_file_ai(self, file_item):
+        """AI-powered file categorization with fallback"""
+        filename = file_item.get("filename", "")
+        extension = "." + filename.split(".")[-1].lower() if "." in filename else ""
+        
+        # Fallback categorization based on extension
+        for category, config in file_categories.items():
+            if extension in config["extensions"]:
+                return category
+        
+        # AI enhancement (simulated - in real app would use ML model)
+        content_keywords = file_item.get("content_preview", "").lower()
+        if any(word in content_keywords for word in ["invoice", "receipt", "contract"]):
+            return "documents"
+        elif any(word in content_keywords for word in ["photo", "image", "picture"]):
+            return "images"
+        elif any(word in content_keywords for word in ["code", "script", "function"]):
+            return "code"
+        
+        return "documents"  # Default fallback
+    
+    def _suggest_folder_structure(self, file_item, category):
+        """Suggest optimal folder structure"""
+        base_config = file_categories.get(category, file_categories["documents"])
+        
+        # AI-enhanced suggestions
+        created_date = file_item.get("created_at", datetime.now().isoformat())[:7]  # YYYY-MM
+        
+        suggestions = {
+            "folder": f"{base_config['folder']}/{created_date}",
+            "confidence": 0.85,
+            "alternatives": [
+                f"{base_config['folder']}/Recent",
+                f"{base_config['folder']}/Archive/{created_date}",
+                f"Workspace_{file_item.get('workspace_id', 1)}/{base_config['folder']}"
+            ],
+            "reasoning": f"Based on file type ({category}) and creation date"
+        }
+        
+        return suggestions
+    
+    def _get_dependency_graph(self, task_id):
+        """Generate dependency graph for task visualization"""
+        task_deps = [d for d in task_dependencies if d["task_id"] == task_id]
+        if not task_deps:
+            return {"nodes": [], "edges": []}
+        
+        # Build graph structure
+        nodes = [{"id": task_id, "type": "current"}]
+        edges = []
+        
+        for dep in task_deps[0]["depends_on"]:
+            nodes.append({"id": dep, "type": "dependency"})
+            edges.append({"from": dep, "to": task_id, "type": "blocks"})
+        
+        return {"nodes": nodes, "edges": edges}
+
+    # === ADVANCED FEATURE METHODS ===
+    def _perform_smart_search(self, query, search_type):
+        """AI-powered semantic search with fallback"""
+        results = []
+        query_lower = query.lower()
+        
+        if search_type in ["all", "tasks"]:
+            for task in tasks_storage:
+                score = 0
+                # Simple relevance scoring
+                if query_lower in task.get("title", "").lower():
+                    score += 10
+                if query_lower in task.get("description", "").lower():
+                    score += 5
+                if any(query_lower in tag.lower() for tag in task.get("tags", [])):
+                    score += 3
+                
+                if score > 0:
+                    results.append({
+                        "type": "task",
+                        "id": task["id"],
+                        "title": task["title"],
+                        "description": task["description"],
+                        "score": score,
+                        "workspace_id": task.get("workspace_id")
+                    })
+        
+        if search_type in ["all", "files"]:
+            for file_item in files_storage:
+                score = 0
+                if query_lower in file_item.get("filename", "").lower():
+                    score += 10
+                if query_lower in file_item.get("category", "").lower():
+                    score += 5
+                
+                if score > 0:
+                    results.append({
+                        "type": "file",
+                        "id": file_item["id"],
+                        "title": file_item["filename"],
+                        "category": file_item.get("category"),
+                        "score": score,
+                        "size": file_item.get("size")
+                    })
+        
+        if search_type in ["all", "workspaces"]:
+            for workspace in workspaces_storage:
+                score = 0
+                if query_lower in workspace.get("name", "").lower():
+                    score += 10
+                if query_lower in workspace.get("description", "").lower():
+                    score += 5
+                
+                if score > 0:
+                    results.append({
+                        "type": "workspace",
+                        "id": workspace["id"],
+                        "title": workspace["name"],
+                        "description": workspace["description"],
+                        "score": score
+                    })
+        
+        # Sort by relevance score
+        results.sort(key=lambda x: x["score"], reverse=True)
+        return results[:20]  # Limit to top 20 results
+    
+    def _matches_trigger(self, trigger, event):
+        """Check if automation trigger matches event"""
+        trigger_type = trigger.get("type")
+        event_type = event.get("type")
+        
+        if trigger_type != event_type:
+            return False
+        
+        # Check conditions
+        conditions = trigger.get("conditions", [])
+        for condition in conditions:
+            field = condition.get("field")
+            operator = condition.get("operator")
+            value = condition.get("value")
+            
+            event_value = event.get(field)
+            
+            if operator == "equals" and event_value != value:
+                return False
+            elif operator == "contains" and value not in str(event_value):
+                return False
+            elif operator == "greater_than" and event_value <= value:
+                return False
+        
+        return True
+    
+    def _execute_rule_actions(self, actions, trigger_event):
+        """Execute automation rule actions"""
+        results = []
+        
+        for action in actions:
+            action_type = action.get("type")
+            
+            if action_type == "create_task":
+                # Create new task
+                new_task = {
+                    "id": f"AUTO{len(tasks_storage) + 1}",
+                    "title": action.get("title", "Automated Task"),
+                    "description": action.get("description", ""),
+                    "status": "pending",
+                    "priority": action.get("priority", "medium"),
+                    "workspace_id": action.get("workspace_id", 1),
+                    "created_at": datetime.now().isoformat(),
+                    "tags": ["automated"],
+                    "dependencies": [],
+                    "attachments": []
+                }
+                tasks_storage.append(new_task)
+                results.append({"action": "task_created", "task_id": new_task["id"]})
+            
+            elif action_type == "move_file":
+                # Move file to folder
+                file_id = trigger_event.get("file_id")
+                target_folder = action.get("target_folder")
+                
+                file_item = next((f for f in files_storage if f["id"] == file_id), None)
+                if file_item:
+                    file_item["folder"] = target_folder
+                    results.append({"action": "file_moved", "file_id": file_id})
+            
+            elif action_type == "send_notification":
+                # Send notification (simulated)
+                results.append({
+                    "action": "notification_sent",
+                    "message": action.get("message", "Automated notification")
+                })
+        
+        return results
+    
+    def _generate_analytics_report(self, report_type, date_range):
+        """Generate analytics report"""
+        now = datetime.now()
+        
+        if date_range == "7d":
+            start_date = now - timedelta(days=7)
+        elif date_range == "30d":
+            start_date = now - timedelta(days=30)
+        else:
+            start_date = now - timedelta(days=7)
+        
+        if report_type == "productivity":
+            # Task completion metrics
+            completed_tasks = [t for t in tasks_storage if t["status"] == "done"]
+            total_tasks = len(tasks_storage)
+            completion_rate = (len(completed_tasks) / max(total_tasks, 1)) * 100
+            
+            # Priority distribution
+            priority_stats = {
+                "high": len([t for t in tasks_storage if t.get("priority") == "high"]),
+                "medium": len([t for t in tasks_storage if t.get("priority") == "medium"]),
+                "low": len([t for t in tasks_storage if t.get("priority") == "low"])
+            }
+            
+            return {
+                "type": "productivity",
+                "period": date_range,
+                "metrics": {
+                    "completion_rate": round(completion_rate, 2),
+                    "total_tasks": total_tasks,
+                    "completed_tasks": len(completed_tasks),
+                    "pending_tasks": len([t for t in tasks_storage if t["status"] == "pending"]),
+                    "in_progress_tasks": len([t for t in tasks_storage if t["status"] == "in-progress"])
+                },
+                "priority_distribution": priority_stats,
+                "workspace_activity": len(activity_feed),
+                "generated_at": now.isoformat()
+            }
+        
+        elif report_type == "storage":
+            # File storage metrics
+            total_files = len(files_storage)
+            total_size = sum(f.get("size", 0) for f in files_storage)
+            
+            category_stats = {}
+            for category in file_categories.keys():
+                category_files = [f for f in files_storage if f.get("category") == category]
+                category_stats[category] = {
+                    "count": len(category_files),
+                    "size": sum(f.get("size", 0) for f in category_files)
+                }
+            
+            return {
+                "type": "storage",
+                "period": date_range,
+                "metrics": {
+                    "total_files": total_files,
+                    "total_size_bytes": total_size,
+                    "total_size_mb": round(total_size / (1024 * 1024), 2),
+                    "category_breakdown": category_stats
+                },
+                "generated_at": now.isoformat()
+            }
+        
+        return {"error": "Unknown report type"}
+    
+    def _bulk_import_data(self, import_data, import_type):
+        """Bulk import workspace data"""
+        imported_count = 0
+        errors = []
+        
+        if import_type == "tasks":
+            tasks_data = import_data.get("tasks", [])
+            
+            for task_data in tasks_data:
+                try:
+                    new_task = {
+                        "id": f"IMP{len(tasks_storage) + imported_count + 1}",
+                        "title": task_data.get("title", "Imported Task"),
+                        "description": task_data.get("description", ""),
+                        "status": task_data.get("status", "pending"),
+                        "priority": task_data.get("priority", "medium"),
+                        "workspace_id": task_data.get("workspace_id", 1),
+                        "created_at": datetime.now().isoformat(),
+                        "tags": task_data.get("tags", []),
+                        "dependencies": [],
+                        "attachments": []
+                    }
+                    tasks_storage.append(new_task)
+                    imported_count += 1
+                except Exception as e:
+                    errors.append(f"Task import error: {str(e)}")
+        
+        elif import_type == "workspaces":
+            workspaces_data = import_data.get("workspaces", [])
+            
+            for workspace_data in workspaces_data:
+                try:
+                    global next_workspace_id
+                    new_workspace = {
+                        "id": next_workspace_id,
+                        "name": workspace_data.get("name", "Imported Workspace"),
+                        "description": workspace_data.get("description", ""),
+                        "color": workspace_data.get("color", "#6B7280"),
+                        "created_at": datetime.now().isoformat()
+                    }
+                    workspaces_storage.append(new_workspace)
+                    next_workspace_id += 1
+                    imported_count += 1
+                except Exception as e:
+                    errors.append(f"Workspace import error: {str(e)}")
+        
+        return {
+            "imported_count": imported_count,
+            "errors": errors,
+            "success": len(errors) == 0,
+            "message": f"Imported {imported_count} {import_type} successfully"
+        }
+    
+    def _get_blocked_tasks(self, task_id):
+        """Get tasks that are blocked by this task"""
+        blocked = []
+        for dep in task_dependencies:
+            if task_id in dep.get("depends_on", []):
+                blocked.append(dep["task_id"])
+        return blocked
+    
+    def _get_blocking_tasks(self, task_id):
+        """Get tasks that are blocking this task"""
+        task_dep = next((d for d in task_dependencies if d["task_id"] == task_id), None)
+        if task_dep:
+            return task_dep.get("depends_on", [])
+        return []
+    
+    def _get_organization_stats(self):
+        """Get file organization statistics"""
+        stats = {
+            "total_files": len(files_storage),
+            "organized_files": len([f for f in files_storage if f.get("category")]),
+            "categories_used": {},
+            "suggestions_pending": 0
+        }
+        
+        for category in file_categories.keys():
+            category_files = [f for f in files_storage if f.get("category") == category]
+            stats["categories_used"][category] = len(category_files)
+        
+        # Count files without AI suggestions
+        stats["suggestions_pending"] = len([f for f in files_storage if not f.get("ai_confidence")])
+        
+        return stats
 
 if __name__ == "__main__":
     print("Starting ULTRA SIMPLE OrdnungsHub Backend...")

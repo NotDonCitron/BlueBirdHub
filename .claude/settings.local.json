@@ -91,7 +91,10 @@
       "Bash(pip3 freeze:*)",
       "Bash(pip3 list:*)",
       "WebFetch(domain:docs.anthropic.com)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(mv:*)",
+      "Bash(OUTPUT_DIR=\"/mnt/c/Users/pasca/BlueBirdHub/outputs/ai_service_enhancement_$(date +%Y%m%d_%H%M%S)\")",
+      "Bash(export:*)"
     ],
     "deny": []
   }

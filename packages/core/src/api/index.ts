@@ -165,5 +165,5 @@ export class ApiClient {
 }
 
 export const defaultApiClient = new ApiClient({
-  baseUrl: 'http://localhost:8001',
+  baseUrl: 'http://localhost:8000',
 });

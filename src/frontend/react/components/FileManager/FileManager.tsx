@@ -344,7 +344,7 @@ const FileManager: React.FC = () => {
               reject(new Error('Network error'));
             });
             
-            xhr.open('POST', 'http://localhost:8001/files/upload');
+            xhr.open('POST', 'http://localhost:8000/files/upload');
             xhr.send(formData);
           });
         });
@@ -647,7 +647,7 @@ const FileManager: React.FC = () => {
         case 'delete':
           if (confirm(`Delete ${selectedFileIds.length} selected files?`)) {
             const deletePromises = selectedFileIds.map(async (fileId) => {
-              const response = await fetch(`http://localhost:8001/files/upload/${fileId}?user_id=1&permanent=false`, {
+              const response = await fetch(`http://localhost:8000/files/upload/${fileId}?user_id=1&permanent=false`, {
                 method: 'DELETE',
               });
               return { fileId, success: response.ok };
@@ -673,7 +673,7 @@ const FileManager: React.FC = () => {
               }
               formData.append('user_id', '1');
               
-              const response = await fetch(`http://localhost:8001/files/${fileId}/move`, {
+              const response = await fetch(`http://localhost:8000/files/${fileId}/move`, {
                 method: 'POST',
                 body: formData,
               });
@@ -692,7 +692,7 @@ const FileManager: React.FC = () => {
           
         case 'favorite':
           const favoritePromises = selectedFileIds.map(async (fileId) => {
-            const response = await fetch(`http://localhost:8001/files/${fileId}/favorite`, {
+            const response = await fetch(`http://localhost:8000/files/${fileId}/favorite`, {
               method: 'POST',
             });
             return { fileId, success: response.ok };
@@ -709,7 +709,7 @@ const FileManager: React.FC = () => {
           
         case 'archive':
           const archivePromises = selectedFileIds.map(async (fileId) => {
-            const response = await fetch(`http://localhost:8001/files/${fileId}/archive`, {
+            const response = await fetch(`http://localhost:8000/files/${fileId}/archive`, {
               method: 'POST',
             });
             return { fileId, success: response.ok };
@@ -745,7 +745,7 @@ const FileManager: React.FC = () => {
     const textExtensions = ['.txt', '.md', '.json', '.xml', '.csv', '.log', '.py', '.js', '.ts', '.html', '.css', '.yaml', '.yml'];
     if (textExtensions.includes(file.type)) {
       try {
-        const response = await fetch(`http://localhost:8001/files/${file.id}/content?user_id=1`);
+        const response = await fetch(`http://localhost:8000/files/${file.id}/content?user_id=1`);
         if (response.ok) {
           const data = await response.json();
           setPreviewContent(data.content);
@@ -797,7 +797,7 @@ const FileManager: React.FC = () => {
   // File Operation Functions
   const toggleFileFavorite = async (fileId: string) => {
     try {
-      const response = await fetch(`http://localhost:8001/files/${fileId}/favorite`, {
+      const response = await fetch(`http://localhost:8000/files/${fileId}/favorite`, {
         method: 'POST',
       });
       
@@ -819,7 +819,7 @@ const FileManager: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8001/files/upload/${fileId}?user_id=1&permanent=false`, {
+      const response = await fetch(`http://localhost:8000/files/upload/${fileId}?user_id=1&permanent=false`, {
         method: 'DELETE',
       });
       
@@ -853,7 +853,7 @@ const FileManager: React.FC = () => {
       formData.append('new_name', newName);
       formData.append('user_id', '1');
 
-      const response = await fetch(`http://localhost:8001/files/${fileId}/rename`, {
+      const response = await fetch(`http://localhost:8000/files/${fileId}/rename`, {
         method: 'POST',
         body: formData,
       });
@@ -884,7 +884,7 @@ const FileManager: React.FC = () => {
       }
       formData.append('user_id', '1');
 
-      const response = await fetch(`http://localhost:8001/files/${fileId}/move`, {
+      const response = await fetch(`http://localhost:8000/files/${fileId}/move`, {
         method: 'POST',
         body: formData,
       });
@@ -906,7 +906,7 @@ const FileManager: React.FC = () => {
   const downloadFile = async (fileId: string, fileName: string) => {
     try {
       // Create a temporary link to trigger download
-      const downloadUrl = `http://localhost:8001/files/${fileId}/download?user_id=1`;
+      const downloadUrl = `http://localhost:8000/files/${fileId}/download?user_id=1`;
       
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -931,7 +931,7 @@ const FileManager: React.FC = () => {
       formData.append('tag_names', tagNames);
       formData.append('user_id', '1');
 
-      const response = await fetch(`http://localhost:8001/files/${fileId}/tags`, {
+      const response = await fetch(`http://localhost:8000/files/${fileId}/tags`, {
         method: 'POST',
         body: formData,
       });
@@ -960,7 +960,7 @@ const FileManager: React.FC = () => {
 
   const removeTagFromFile = async (fileId: string, tagName: string) => {
     try {
-      const response = await fetch(`http://localhost:8001/files/${fileId}/tags?tag_names=${encodeURIComponent(tagName)}&user_id=1`, {
+      const response = await fetch(`http://localhost:8000/files/${fileId}/tags?tag_names=${encodeURIComponent(tagName)}&user_id=1`, {
         method: 'DELETE',
       });
       

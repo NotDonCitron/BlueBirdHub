@@ -113,14 +113,33 @@ def create_demo_user(db: Session) -> User:
     if existing_user:
         return existing_user
     
-    # Create demo user
+    # Create demo user with password
+    from src.backend.services.auth import get_password_hash
+    
     user_data = UserCreate(
         username="demo",
         email="demo@example.com",
+        password="demo123",  # Add password
         is_active=True
     )
-    user = User(**user_data.dict())
+    
+    # Create user with hashed password
+    user = User(
+        username=user_data.username,
+        email=user_data.email,
+        password_hash=get_password_hash("demo123"),
+        is_active=user_data.is_active
+    )
     db.add(user)
+    
+    # Also create admin user
+    admin_user = User(
+        username="admin",
+        email="admin@example.com", 
+        password_hash=get_password_hash("admin123"),
+        is_active=True
+    )
+    db.add(admin_user)
     
     # Create user preferences
     preferences = [
@@ -185,7 +204,7 @@ def create_demo_workspaces(db: Session, user: User):
     
     for ws_data in workspaces_data:
         ws_data["user_id"] = user.id
-        workspace = Workspace(**ws_data, owner_id=user.id)
+        workspace = Workspace(**ws_data)
         db.add(workspace)
         
         # Mark as accessed recently

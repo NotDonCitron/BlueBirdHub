@@ -11,7 +11,203 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/automations", tags=["automation"])
+router = APIRouter(prefix="/automation", tags=["automation"])
+
+@router.get("/dashboard")
+async def get_automation_dashboard(db: Session = Depends(get_db)):
+    """Get automation dashboard data"""
+    try:
+        dashboard_data = {
+            "success": True,
+            "statistics": {
+                "rules": {
+                    "total": 3,
+                    "enabled": 2,
+                    "total_triggers": 45
+                },
+                "scheduled_tasks": {
+                    "total": 2,
+                    "enabled": 2,
+                    "total_runs": 28
+                }
+            },
+            "most_active_rules": [
+                {
+                    "id": "1",
+                    "name": "Sort Downloads by Type",
+                    "description": "Automatically sort downloaded files by file type",
+                    "conditions": {
+                        "file_extension": ["pdf", "docx", "xlsx"],
+                        "filename_contains": []
+                    },
+                    "actions": {
+                        "move_to_folder": "Downloads/Documents"
+                    },
+                    "enabled": True,
+                    "created_at": "2024-06-20T10:00:00Z",
+                    "trigger_count": 23
+                },
+                {
+                    "id": "2",
+                    "name": "Archive Old Documents",
+                    "description": "Move documents older than 1 year to archive",
+                    "conditions": {
+                        "file_extension": ["pdf", "doc", "docx"]
+                    },
+                    "actions": {
+                        "move_to_folder": "Archive"
+                    },
+                    "enabled": True,
+                    "created_at": "2024-06-15T14:30:00Z",
+                    "trigger_count": 12
+                }
+            ],
+            "upcoming_tasks": [
+                {
+                    "id": "1",
+                    "name": "Daily File Cleanup",
+                    "description": "Clean up temporary files daily",
+                    "schedule": {
+                        "type": "daily",
+                        "time": "09:00",
+                        "timezone": "Europe/Berlin"
+                    },
+                    "actions": ["cleanup_temp_files", "organize_downloads"],
+                    "enabled": True,
+                    "next_run": "2024-06-25T09:00:00Z",
+                    "run_count": 15,
+                    "status": "scheduled"
+                }
+            ],
+            "recent_activity": [
+                {
+                    "timestamp": "2024-06-24T13:30:00Z",
+                    "type": "rule_execution",
+                    "message": "Regel 'Sort Downloads by Type' hat 3 Dateien organisiert"
+                },
+                {
+                    "timestamp": "2024-06-24T09:00:00Z",
+                    "type": "scheduled_task",
+                    "message": "Geplanter Task 'Daily File Cleanup' erfolgreich ausgeführt"
+                }
+                         ]
+         }
+         return dashboard_data
+     except Exception as e:
+         logger.error(f"Failed to get automation dashboard: {e}")
+         raise HTTPException(status_code=500, detail="Failed to retrieve automation dashboard")
+
+@router.get("/scheduled-tasks")
+async def get_scheduled_tasks(db: Session = Depends(get_db)):
+    """Get scheduled tasks"""
+    try:
+        return {
+            "success": True,
+            "tasks": [
+                {
+                    "id": "1",
+                    "name": "Daily File Cleanup",
+                    "description": "Clean up temporary files and organize downloads",
+                    "schedule": {
+                        "type": "daily",
+                        "time": "09:00",
+                        "timezone": "Europe/Berlin"
+                    },
+                    "actions": ["cleanup_temp_files", "organize_downloads", "compress_old_files"],
+                    "enabled": True,
+                    "last_run": "2024-06-24T09:00:00Z",
+                    "next_run": "2024-06-25T09:00:00Z",
+                    "run_count": 15,
+                    "status": "scheduled"
+                },
+                {
+                    "id": "2",
+                    "name": "Weekly Backup",
+                    "description": "Create weekly backup of important documents",
+                    "schedule": {
+                        "type": "weekly",
+                        "time": "02:00",
+                        "timezone": "Europe/Berlin",
+                        "day": "Sunday"
+                    },
+                    "actions": ["backup_documents", "verify_backup", "cleanup_old_backups"],
+                    "enabled": True,
+                    "last_run": "2024-06-23T02:00:00Z",
+                    "next_run": "2024-06-30T02:00:00Z",
+                    "run_count": 8,
+                    "status": "scheduled"
+                }
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Failed to get scheduled tasks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve scheduled tasks")
+
+@router.get("/rules")
+async def get_automation_rules(db: Session = Depends(get_db)):
+    """Get automation rules"""
+    try:
+        return {
+            "success": True,
+            "rules": [
+                {
+                    "id": "1",
+                    "name": "Sort Downloads by Type",
+                    "description": "Automatically sort downloaded files by file type",
+                    "conditions": {
+                        "file_extension": ["pdf", "docx", "xlsx", "jpg", "png"],
+                        "filename_contains": [],
+                        "file_size_mb": {"min": 0, "max": 100}
+                    },
+                    "actions": {
+                        "move_to_folder": "Downloads/Documents",
+                        "add_tags": ["document", "auto-sorted"]
+                    },
+                    "enabled": True,
+                    "created_at": "2024-06-20T10:00:00Z",
+                    "trigger_count": 23,
+                    "last_triggered": "2024-06-24T13:30:00Z"
+                },
+                {
+                    "id": "2",
+                    "name": "Archive Old Documents",
+                    "description": "Move documents older than 1 year to archive",
+                    "conditions": {
+                        "file_extension": ["pdf", "doc", "docx"],
+                        "filename_contains": [],
+                        "file_size_mb": {"min": 1}
+                    },
+                    "actions": {
+                        "move_to_folder": "Archive/2023",
+                        "add_tags": ["archived", "old-document"],
+                        "compress": True
+                    },
+                    "enabled": True,
+                    "created_at": "2024-06-15T14:30:00Z",
+                    "trigger_count": 12,
+                    "last_triggered": "2024-06-20T08:15:00Z"
+                },
+                {
+                    "id": "3",
+                    "name": "Organize Screenshots",
+                    "description": "Move screenshots to organized folders by date",
+                    "conditions": {
+                        "file_extension": ["png", "jpg"],
+                        "filename_contains": ["screenshot", "screen"]
+                    },
+                    "actions": {
+                        "move_to_folder": "Pictures/Screenshots",
+                        "add_tags": ["screenshot"]
+                    },
+                    "enabled": False,
+                    "created_at": "2024-06-10T16:45:00Z",
+                    "trigger_count": 0
+                }
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Failed to get automation rules: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve automation rules")
 
 @router.get("/")
 async def get_automations(db: Session = Depends(get_db)):

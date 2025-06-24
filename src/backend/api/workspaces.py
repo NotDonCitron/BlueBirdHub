@@ -31,6 +31,84 @@ from src.backend.api.workspaces_enhanced import (
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
+@router.get("/demo", response_model=List[Dict[str, Any]])
+async def get_demo_workspaces():
+    """Get demo workspaces without authentication for testing"""
+    try:
+        demo_workspaces = [
+            {
+                "id": 1,
+                "name": "Development Workspace",
+                "description": "Software development and coding projects",
+                "theme": "professional", 
+                "color": "#3b82f6",
+                "user_id": 1,
+                "created_at": "2024-06-08T10:00:00Z",
+                "updated_at": "2024-06-08T10:00:00Z",
+                "is_active": True,
+                "layout_config": {
+                    "widgets": ["code_editor", "terminal", "file_browser", "git_panel"],
+                    "layout": "development"
+                },
+                "ambient_sound": "office_ambience"
+            },
+            {
+                "id": 2,
+                "name": "Design Studio",
+                "description": "UI/UX design and creative projects",
+                "theme": "colorful",
+                "color": "#10b981", 
+                "user_id": 1,
+                "created_at": "2024-06-08T11:00:00Z",
+                "updated_at": "2024-06-08T11:00:00Z",
+                "is_active": True,
+                "layout_config": {
+                    "widgets": ["design_tools", "color_palette", "asset_library", "preview"],
+                    "layout": "creative"
+                },
+                "ambient_sound": "creativity_boost"
+            },
+            {
+                "id": 3,
+                "name": "Research Hub",
+                "description": "Research and documentation workspace",
+                "theme": "light",
+                "color": "#7c3aed",
+                "user_id": 1,
+                "created_at": "2024-06-08T12:00:00Z",
+                "updated_at": "2024-06-08T12:00:00Z", 
+                "is_active": True,
+                "layout_config": {
+                    "widgets": ["note_editor", "reference_manager", "mind_map", "search"],
+                    "layout": "research"
+                },
+                "ambient_sound": "study_music"
+            },
+            {
+                "id": 4,
+                "name": "Personal Organizer",
+                "description": "Daily life and personal task management",
+                "theme": "minimal",
+                "color": "#059669",
+                "user_id": 1,
+                "created_at": "2024-06-08T13:00:00Z",
+                "updated_at": "2024-06-08T13:00:00Z",
+                "is_active": True,
+                "layout_config": {
+                    "widgets": ["calendar", "todo_list", "habits", "weather"],
+                    "layout": "personal"
+                },
+                "ambient_sound": "nature_sounds"
+            }
+        ]
+        
+        logger.info(f"Serving {len(demo_workspaces)} demo workspaces")
+        return demo_workspaces
+        
+    except Exception as e:
+        logger.error(f"Error serving demo workspaces: {e}")
+        raise HTTPException(status_code=500, detail="Failed to serve demo workspaces")
+
 @router.get("/templates")
 async def get_workspace_templates():
     """Get available workspace templates with enhanced information"""
@@ -256,6 +334,7 @@ async def get_available_themes(db: Session = Depends(get_db)):
 async def get_workspaces(
     skip: int = 0,
     limit: int = 100,
+    demo_mode: Optional[str] = None,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):

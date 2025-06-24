@@ -1,4 +1,6 @@
 // Resource Preloader for Performance Optimization
+import React from 'react';
+
 interface PreloadOptions {
   priority?: 'high' | 'low';
   crossorigin?: 'anonymous' | 'use-credentials';

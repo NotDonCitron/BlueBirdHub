@@ -27,6 +27,7 @@ from src.backend.api.collaboration import router as collaboration_router
 from src.backend.api.suppliers import router as suppliers_router
 from src.backend.api.performance import router as performance_router
 from src.backend.api.smart_organization import router as smart_organization_router
+from src.backend.api.automation import router as automation_router
 # Temporarily disabled until aiohttp is installed
 # from src.backend.api.mcp_integration import router as mcp_router
 from src.backend.routes.auth import router as auth_router
@@ -216,18 +217,32 @@ app = FastAPI(
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     
-    # Content Security Policy - Allow CDN resources for Swagger UI
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "img-src 'self' data: https:; "
-        "font-src 'self' https://cdn.jsdelivr.net; "
-        "connect-src 'self'; "
-        "frame-ancestors 'none'; "
-        "form-action 'self'; "
-        "base-uri 'self';"
-    )
+    # Content Security Policy - Allow CDN resources and local development
+    if os.getenv("NODE_ENV") == "production":
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' https://cdn.jsdelivr.net; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "form-action 'self'; "
+            "base-uri 'self';"
+        )
+    else:
+        # More permissive CSP for development
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' localhost:* 127.0.0.1:*; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' localhost:* 127.0.0.1:* https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' localhost:* 127.0.0.1:* https://cdn.jsdelivr.net; "
+            "img-src 'self' data: blob: localhost:* 127.0.0.1:* https:; "
+            "font-src 'self' localhost:* 127.0.0.1:* https://cdn.jsdelivr.net; "
+            "connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; "
+            "media-src 'self' localhost:* 127.0.0.1:*; "
+            "object-src 'none'; "
+            "frame-ancestors 'self';"
+        )
     
     # Other security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -242,19 +257,37 @@ async def add_security_headers(request: Request, call_next):
     
     return response
 
-# Configure CORS with restricted origins
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3002,http://127.0.0.1:3002,http://localhost:3001,http://127.0.0.1:3001,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173").split(",")
+# Configure CORS with comprehensive origins
+default_origins = [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001", 
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000"
+]
+
+cors_origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
 # For development, be more permissive with CORS
 if os.getenv("NODE_ENV") != "production":
     cors_origins = ["*"]  # Allow all origins in development
+    logger.info("CORS: Allowing all origins for development")
+else:
+    logger.info(f"CORS: Allowing origins: {cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,  # Allow all origins in development
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],  # Allow all headers in development
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Include routers
@@ -270,6 +303,7 @@ app.include_router(collaboration_router)
 app.include_router(suppliers_router)
 app.include_router(performance_router)
 app.include_router(smart_organization_router)
+app.include_router(automation_router)
 # Temporarily disabled until aiohttp is installed
 # app.include_router(mcp_router)
 

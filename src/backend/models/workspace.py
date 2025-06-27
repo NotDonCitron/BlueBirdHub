@@ -31,6 +31,18 @@ class Workspace(Base):
     activities = relationship("WorkspaceActivity", back_populates="workspace", cascade="all, delete-orphan")
     invites = relationship("WorkspaceInvite", back_populates="workspace", cascade="all, delete-orphan")
     
+    # Calendar relationships - re-enabled
+    calendars = relationship("Calendar", back_populates="workspace", cascade="all, delete-orphan")
+    calendar_shares = relationship("CalendarShare", back_populates="workspace", cascade="all, delete-orphan")
+    
+    # Analytics relationships - re-enabled
+    activity_events = relationship("ActivityEvent", back_populates="workspace", cascade="all, delete-orphan")
+    time_tracking = relationship("TimeTracking", back_populates="workspace", cascade="all, delete-orphan")
+    productivity_metrics = relationship("ProductivityMetrics", back_populates="workspace", cascade="all, delete-orphan")
+    team_metrics = relationship("TeamMetrics", back_populates="workspace", cascade="all, delete-orphan")
+    kpis = relationship("KPITracking", back_populates="workspace", cascade="all, delete-orphan")
+    analytics_insights = relationship("AnalyticsInsights", back_populates="workspace", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Workspace(id={self.id}, name='{self.name}', theme='{self.theme}')>"
 

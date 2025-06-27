@@ -90,12 +90,12 @@ async def get_automation_dashboard(db: Session = Depends(get_db)):
                     "type": "scheduled_task",
                     "message": "Geplanter Task 'Daily File Cleanup' erfolgreich ausgeführt"
                 }
-                         ]
-         }
-         return dashboard_data
-     except Exception as e:
-         logger.error(f"Failed to get automation dashboard: {e}")
-         raise HTTPException(status_code=500, detail="Failed to retrieve automation dashboard")
+            ]
+        }
+        return dashboard_data
+    except Exception as e:
+        logger.error(f"Failed to get automation dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve automation dashboard")
 
 @router.get("/scheduled-tasks")
 async def get_scheduled_tasks(db: Session = Depends(get_db)):

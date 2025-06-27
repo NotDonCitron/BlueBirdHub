@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: number;
   username: string;
-  last_login: string | null;
-  created_at: string;
+  email: string;
+  is_active: boolean;
 }
 
 interface AuthContextType {
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if ((window as any).electronAPI) {
         response = await (window as any).electronAPI.apiRequest('/auth/me', 'GET', null, headers);
       } else {
-        const res = await fetch('http://127.0.0.1:8000/auth/me', {
+        const res = await fetch('http://127.0.0.1:8888/auth/me', {
           headers
         });
         if (!res.ok) {
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         response = await res.json();
       }
 
-      setUser(response.user);
+      setUser(response);
     } catch (error) {
       console.error('Failed to fetch user info:', error);
       // If fetching user info fails, clear the token
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if ((window as any).electronAPI) {
           await (window as any).electronAPI.apiRequest('/auth/logout', 'POST', null, headers);
         } else {
-          await fetch('http://127.0.0.1:8000/auth/logout', {
+          await fetch('http://127.0.0.1:8888/auth/logout', {
             method: 'POST',
             headers
           });

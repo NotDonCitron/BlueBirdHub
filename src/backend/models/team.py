@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import enum
 
-from .base import Base
+from src.backend.database.database import Base
 
 class TeamRole(enum.Enum):
     OWNER = "owner"
@@ -45,6 +45,11 @@ class Team(Base):
     creator = relationship("User", back_populates="created_teams")
     memberships = relationship("TeamMembership", back_populates="team", cascade="all, delete-orphan")
     workspace_shares = relationship("WorkspaceShare", back_populates="team")
+    
+    # Analytics relationships - re-enabled
+    team_metrics = relationship("TeamMetrics", back_populates="team", cascade="all, delete-orphan")
+    kpis = relationship("KPITracking", back_populates="team", cascade="all, delete-orphan")
+    analytics_insights = relationship("AnalyticsInsights", back_populates="team", cascade="all, delete-orphan")
 
 class TeamMembership(Base):
     """User membership in teams with roles"""

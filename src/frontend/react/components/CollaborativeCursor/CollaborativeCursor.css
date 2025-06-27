@@ -1,0 +1,111 @@
+/* Collaborative Cursor Styles */
+
+.collaborative-cursors-container {
+  position: relative;
+  pointer-events: none;
+}
+
+.collaborative-cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  transition: opacity 0.3s ease, transform 0.1s ease;
+  will-change: transform;
+}
+
+.cursor-line {
+  width: 2px;
+  height: 20px;
+  position: relative;
+  animation: cursorBlink 1s infinite;
+}
+
+.cursor-label {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: white;
+  white-space: nowrap;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.collaborative-cursor:hover .cursor-label {
+  opacity: 1;
+}
+
+.cursor-username {
+  display: block;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Selection highlighting */
+.collaborative-selection {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+/* Cursor blinking animation */
+@keyframes cursorBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.5;
+  }
+}
+
+/* Cursor colors - predefined set for consistency */
+.cursor-color-1 { background-color: #FF6B6B; }
+.cursor-color-2 { background-color: #4ECDC4; }
+.cursor-color-3 { background-color: #45B7D1; }
+.cursor-color-4 { background-color: #96CEB4; }
+.cursor-color-5 { background-color: #FECA57; }
+.cursor-color-6 { background-color: #FF9FF3; }
+.cursor-color-7 { background-color: #54A0FF; }
+.cursor-color-8 { background-color: #48DBFB; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cursor-label {
+    font-size: 10px;
+    padding: 1px 4px;
+    top: -22px;
+  }
+  
+  .cursor-line {
+    width: 1.5px;
+    height: 18px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .cursor-line {
+    width: 1px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .collaborative-cursor {
+    transition: opacity 0.3s ease;
+  }
+  
+  .cursor-line {
+    animation: none;
+    opacity: 0.8;
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "menu": {
+    "dashboard": "Dashboard",
+    "workspaces": "Workspaces",
+    "tasks": "Tasks",
+    "files": "Files",
+    "calendar": "Calendar",
+    "analytics": "Analytics",
+    "ai_assistant": "AI Assistant",
+    "automation": "Automation",
+    "collaboration": "Collaboration",
+    "reports": "Reports",
+    "settings": "Settings",
+    "admin": "Administration",
+    "profile": "Profile",
+    "help": "Help",
+    "logout": "Logout"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "workspace": "Workspace",
+    "task": "Task",
+    "file": "File",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "details": "Details",
+    "settings": "Settings",
+    "permissions": "Permissions",
+    "history": "History",
+    "analytics": "Analytics"
+  },
+  "sidebar": {
+    "toggle": "Toggle Sidebar",
+    "expand": "Expand Sidebar",
+    "collapse": "Collapse Sidebar",
+    "pin": "Pin Sidebar",
+    "unpin": "Unpin Sidebar"
+  },
+  "footer": {
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "support": "Support",
+    "documentation": "Documentation",
+    "api_docs": "API Documentation",
+    "status": "System Status",
+    "version": "Version {{version}}"
+  }
+}

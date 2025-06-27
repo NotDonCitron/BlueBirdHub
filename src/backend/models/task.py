@@ -47,6 +47,10 @@ class Task(Base):
     assignments = relationship("TaskAssignment", back_populates="task", cascade="all, delete-orphan")
     comments = relationship("TaskComment", back_populates="task", cascade="all, delete-orphan")
     
+    # Calendar relationships - re-enabled
+    calendar_event = relationship("CalendarEvent", back_populates="task", uselist=False)
+    time_blocks = relationship("TimeBlock", back_populates="task", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<Task(id={self.id}, title='{self.title}', status={self.status.value})>"
 

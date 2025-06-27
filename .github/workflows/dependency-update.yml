@@ -1,0 +1,84 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # Update Python dependencies
+  update-python-dependencies:
+    name: Update Python Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install pip-tools
+      run: pip install pip-tools
+
+    - name: Update requirements
+      run: |
+        pip-compile --upgrade requirements.in
+        pip-compile --upgrade requirements-archon.in
+        pip-compile --upgrade requirements-deploy.in
+
+    - name: Create PR for Python updates
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update Python dependencies'
+        title: 'Update Python Dependencies'
+        body: |
+          ## Python Dependency Updates
+          
+          Automated update of Python dependencies.
+          
+          Please review the changes and ensure all tests pass before merging.
+        branch: update-python-dependencies
+        delete-branch: true
+
+  # Update Node.js dependencies
+  update-node-dependencies:
+    name: Update Node.js Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Update dependencies
+      run: |
+        npm update
+        npm audit fix
+
+    - name: Create PR for Node.js updates
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update Node.js dependencies'
+        title: 'Update Node.js Dependencies'
+        body: |
+          ## Node.js Dependency Updates
+          
+          Automated update of Node.js dependencies.
+          
+          Please review the changes and ensure all tests pass before merging.
+        branch: update-node-dependencies
+        delete-branch: true

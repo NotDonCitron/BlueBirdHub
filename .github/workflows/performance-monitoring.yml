@@ -1,0 +1,433 @@
+name: Performance Monitoring & Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run performance tests daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test (dev/staging/production)'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+        - dev
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Frontend Performance Testing
+  frontend-performance:
+    name: Frontend Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli
+
+    - name: Start test server
+      run: |
+        npm run dev &
+        sleep 10
+        curl -f http://localhost:3002 || exit 1
+
+    - name: Run Lighthouse CI
+      run: |
+        lhci autorun --upload.target=temporary-public-storage \
+          --collect.url=http://localhost:3002 \
+          --collect.numberOfRuns=3
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+    - name: Bundle size analysis
+      run: |
+        npm run build:analyze
+        echo "Bundle analysis completed"
+
+    - name: Upload Lighthouse results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: lighthouse-results
+        path: .lighthouseci/
+
+    - name: Upload bundle analysis
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: bundle-analysis
+        path: |
+          dist/bundle-report.html
+          dist/stats.json
+
+  # Backend Performance Testing
+  backend-performance:
+    name: Backend Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+        pip install locust pytest-benchmark
+
+    - name: Setup test environment
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+      run: |
+        python scripts/init_database.py
+
+    - name: Start backend server
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+        SECRET_KEY: test_secret_key
+        JWT_SECRET_KEY: test_jwt_secret
+      run: |
+        python -m uvicorn src.backend.main:app --host 0.0.0.0 --port 8000 &
+        sleep 10
+        curl -f http://localhost:8000/health
+
+    - name: Run API performance benchmarks
+      run: |
+        pytest tests/performance/ -v --benchmark-json=benchmark-results.json
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+
+    - name: Run load testing with Locust
+      run: |
+        locust --host=http://localhost:8000 \
+               --users=50 \
+               --spawn-rate=5 \
+               --run-time=300s \
+               --headless \
+               --html=locust-report.html \
+               --csv=locust-results \
+               -f tests/performance/locustfile.py
+
+    - name: Database performance analysis
+      run: |
+        python scripts/analyze-db-performance.py > db-performance-report.txt
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: backend-performance-results
+        path: |
+          benchmark-results.json
+          locust-report.html
+          locust-results*.csv
+          db-performance-report.txt
+
+  # Memory and Resource Usage Testing
+  resource-usage:
+    name: Memory & Resource Usage Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install monitoring tools
+      run: |
+        pip install psutil memory-profiler py-spy
+        pip install -r requirements.txt
+
+    - name: Run memory profiling
+      run: |
+        python -m memory_profiler scripts/memory-profile-test.py > memory-profile.txt
+
+    - name: Run CPU profiling
+      run: |
+        py-spy record -o cpu-profile.svg -- python scripts/cpu-profile-test.py
+      continue-on-error: true
+
+    - name: Docker resource usage test
+      run: |
+        docker build -t bluebirdub-test .
+        docker run --rm -d --name resource-test \
+          --memory=1g --cpus=1.0 \
+          bluebirdub-test
+        sleep 30
+        docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}" resource-test > docker-stats.txt
+        docker stop resource-test
+        cat docker-stats.txt
+
+    - name: Upload resource usage results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: resource-usage-results
+        path: |
+          memory-profile.txt
+          cpu-profile.svg
+          docker-stats.txt
+
+  # Archon Performance Integration
+  archon-performance:
+    name: Archon AI Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Run Archon performance benchmarks
+      run: |
+        python scripts/archon_performance_test.py --output-json=archon-performance.json
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Analyze AI response times
+      run: |
+        python scripts/analyze-ai-performance.py archon-performance.json > ai-performance-report.txt
+        cat ai-performance-report.txt
+
+    - name: Upload Archon performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-performance-results
+        path: |
+          archon-performance.json
+          ai-performance-report.txt
+
+  # End-to-End Performance Testing
+  e2e-performance:
+    name: End-to-End Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [frontend-performance, backend-performance]
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        npm install
+        pip install -r requirements.txt
+        npx playwright install
+
+    - name: Build frontend
+      run: npm run build
+
+    - name: Start full application
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+      run: |
+        python scripts/init_database.py
+        python -m uvicorn src.backend.main:app --host 0.0.0.0 --port 8000 &
+        npm run dev &
+        sleep 20
+
+    - name: Run E2E performance tests
+      run: |
+        npx playwright test --reporter=json tests/e2e/performance/ > e2e-performance-results.json
+
+    - name: Measure user journey performance
+      run: |
+        node scripts/measure-user-journeys.js > user-journey-performance.json
+
+    - name: Upload E2E performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-performance-results
+        path: |
+          e2e-performance-results.json
+          user-journey-performance.json
+
+  # Performance Regression Detection
+  performance-regression:
+    name: Performance Regression Detection
+    runs-on: ubuntu-latest
+    needs: [frontend-performance, backend-performance, e2e-performance]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all performance results
+      uses: actions/download-artifact@v3
+      with:
+        path: performance-results
+
+    - name: Setup Python for analysis
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install analysis tools
+      run: |
+        pip install pandas numpy matplotlib seaborn
+
+    - name: Analyze performance trends
+      run: |
+        python scripts/performance-regression-analysis.py performance-results/ > performance-analysis.md
+        cat performance-analysis.md
+
+    - name: Check for performance regressions
+      id: regression-check
+      run: |
+        if python scripts/check-performance-regression.py performance-results/; then
+          echo "regression-detected=false" >> $GITHUB_OUTPUT
+        else
+          echo "regression-detected=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create performance regression issue
+      if: steps.regression-check.outputs.regression-detected == 'true'
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: 'Performance Regression Detected - ${{ github.sha }}'
+        content-filepath: performance-analysis.md
+        labels: |
+          performance
+          regression
+          needs-investigation
+
+    - name: Comment on PR with performance analysis
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const analysis = fs.readFileSync('performance-analysis.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## ⚡ Performance Analysis\n\n${analysis}`
+          });
+
+    - name: Upload performance analysis
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-analysis
+        path: |
+          performance-analysis.md
+          performance-results/

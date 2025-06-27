@@ -22,8 +22,8 @@ class CRUDWorkspace(CRUDBase[Workspace, WorkspaceCreate, WorkspaceUpdate]):
             db.query(self.model)
             .options(
                 joinedload(Workspace.tasks),
-                joinedload(Workspace.files),
-                joinedload(Workspace.members)
+                joinedload(Workspace.shares),
+                joinedload(Workspace.activities)
             )
             .filter(Workspace.user_id == user_id)
             .filter(Workspace.is_active == True)

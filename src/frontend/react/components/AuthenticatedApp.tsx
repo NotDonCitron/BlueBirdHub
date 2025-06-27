@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { WorkspaceManager, TaskManager } from './LazyComponents';
 import LoadingSkeleton from './LoadingSkeleton/LoadingSkeleton';
+import VoiceCommandManager from './VoiceCommands/VoiceCommandManager';
 import { useAuth } from '../contexts/AuthContext';
 import Login from './Login/Login';
 
@@ -26,6 +27,7 @@ const AuthenticatedApp: React.FC = () => {
         <WorkspaceManager />
         <TaskManager />
       </Suspense>
+      <VoiceCommandManager />
     </div>
   );
 };

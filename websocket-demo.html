@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueBirdHub WebSocket Collaboration Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        
+        .main-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .widget {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .connection-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .connected {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .disconnected {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn.secondary {
+            background: #95a5a6;
+        }
+        
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .message-log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .cursor-demo {
+            position: relative;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            min-height: 200px;
+        }
+        
+        .cursor {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: #e74c3c;
+            animation: blink 1s infinite;
+            z-index: 10;
+        }
+        
+        .cursor-label {
+            position: absolute;
+            top: -25px;
+            left: -10px;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .activity-item {
+            padding: 8px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 13px;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            color: #95a5a6;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤝 BlueBirdHub WebSocket Collaboration Demo</h1>
+            <p>Real-time collaboration features demonstration</p>
+        </div>
+        
+        <div class="demo-grid">
+            <div class="main-panel">
+                <div id="connectionStatus" class="connection-status disconnected">
+                    🔴 Disconnected
+                </div>
+                
+                <div class="form-group">
+                    <label>JWT Token:</label>
+                    <input type="text" id="tokenInput" placeholder="Enter your JWT token here">
+                </div>
+                
+                <div class="form-group">
+                    <label>Workspace ID:</label>
+                    <input type="number" id="workspaceInput" placeholder="Enter workspace ID" value="1">
+                </div>
+                
+                <button class="btn" onclick="connect()">Connect</button>
+                <button class="btn secondary" onclick="disconnect()">Disconnect</button>
+                
+                <h3>📝 Collaborative Editor Demo</h3>
+                <div class="cursor-demo" id="editorDemo">
+                    <div>// Welcome to the collaborative editor!</div>
+                    <div>// Multiple users can edit this simultaneously</div>
+                    <div>// Cursors and changes appear in real-time</div>
+                    <div></div>
+                    <div>function collaborate() {</div>
+                    <div>  console.log("Real-time collaboration!");</div>
+                    <div>}</div>
+                </div>
+                
+                <h3>🔄 Send Test Messages</h3>
+                <button class="btn" onclick="sendCursorUpdate()">Send Cursor Update</button>
+                <button class="btn" onclick="sendDocumentUpdate()">Send Document Update</button>
+                <button class="btn" onclick="sendActivityUpdate()">Send Activity Update</button>
+                <button class="btn" onclick="sendTypingIndicator()">Toggle Typing</button>
+                
+                <h3>📨 Message Log</h3>
+                <div id="messageLog" class="message-log"></div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="widget">
+                    <h4>👥 Active Users</h4>
+                    <div id="userList" class="user-list">
+                        <div style="text-align: center; color: #95a5a6; font-style: italic;">
+                            Connect to see active users
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget">
+                    <h4>🔄 Recent Activity</h4>
+                    <div id="activityLog">
+                        <div style="text-align: center; color: #95a5a6; font-style: italic;">
+                            No activity yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let isTyping = false;
+        let cursors = new Map();
+        
+        function log(message, type = 'info') {
+            const messageLog = document.getElementById('messageLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #95a5a6;">[${timestamp}]</span> ${message}`;
+            messageLog.appendChild(logEntry);
+            messageLog.scrollTop = messageLog.scrollHeight;
+        }
+        
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.className = 'connection-status connected';
+                status.textContent = '🟢 Connected';
+            } else {
+                status.className = 'connection-status disconnected';
+                status.textContent = '🔴 Disconnected';
+            }
+        }
+        
+        function updateUserList(users) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            
+            if (users.length === 0) {
+                userList.innerHTML = '<div style="text-align: center; color: #95a5a6; font-style: italic;">No other users online</div>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-avatar" style="background-color: ${user.cursor_color}">
+                        ${user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div style="font-weight: 500;">${user.username}</div>
+                        <div style="font-size: 11px; color: #95a5a6;">${user.status}</div>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+        
+        function addActivity(activity) {
+            const activityLog = document.getElementById('activityLog');
+            
+            // Remove empty state
+            if (activityLog.children.length === 1 && activityLog.children[0].textContent.includes('No activity')) {
+                activityLog.innerHTML = '';
+            }
+            
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            const time = new Date().toLocaleTimeString();
+            activityItem.innerHTML = `
+                <div><strong>${activity.username}</strong> ${activity.activity}</div>
+                <div class="activity-time">${time}</div>
+            `;
+            
+            activityLog.insertBefore(activityItem, activityLog.firstChild);
+            
+            // Keep only last 10 activities
+            while (activityLog.children.length > 10) {
+                activityLog.removeChild(activityLog.lastChild);
+            }
+        }
+        
+        function updateCursor(cursorData) {
+            const editorDemo = document.getElementById('editorDemo');
+            const cursorId = cursorData.user_id;
+            
+            // Remove existing cursor
+            let cursor = cursors.get(cursorId);
+            if (cursor && cursor.parentNode) {
+                cursor.parentNode.removeChild(cursor);
+            }
+            
+            // Create new cursor
+            cursor = document.createElement('div');
+            cursor.className = 'cursor';
+            cursor.style.backgroundColor = cursorData.cursor_color;
+            cursor.innerHTML = `<div class="cursor-label" style="background-color: ${cursorData.cursor_color}">${cursorData.username}</div>`;
+            
+            // Position cursor (simplified positioning)
+            const line = cursorData.position ? cursorData.position.line : 0;
+            const column = cursorData.position ? cursorData.position.column : 0;
+            cursor.style.top = `${line * 24 + 16}px`;
+            cursor.style.left = `${column * 8 + 16}px`;
+            
+            editorDemo.appendChild(cursor);
+            cursors.set(cursorId, cursor);
+            
+            // Auto-remove cursor after 30 seconds
+            setTimeout(() => {
+                if (cursor && cursor.parentNode) {
+                    cursor.parentNode.removeChild(cursor);
+                    cursors.delete(cursorId);
+                }
+            }, 30000);
+        }
+        
+        function connect() {
+            const token = document.getElementById('tokenInput').value;
+            const workspaceId = document.getElementById('workspaceInput').value;
+            
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+            
+            if (!workspaceId) {
+                alert('Please enter a workspace ID');
+                return;
+            }
+            
+            const wsUrl = `ws://localhost:8000/ws/workspace/${workspaceId}?token=${encodeURIComponent(token)}`;
+            log(`Connecting to: ${wsUrl}`);
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function(event) {
+                log('✅ Connected to WebSocket', 'success');
+                updateConnectionStatus(true);
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const message = JSON.parse(event.data);
+                    log(`📨 Received: ${message.type}`, 'info');
+                    console.log('Received message:', message);
+                    
+                    switch (message.type) {
+                        case 'connection_established':
+                            log(`🎉 Connection established with color: ${message.data.cursor_color}`);
+                            break;
+                            
+                        case 'workspace_users':
+                            updateUserList(message.data);
+                            log(`👥 ${message.data.length} users online`);
+                            break;
+                            
+                        case 'user_joined':
+                            log(`👋 ${message.data.username} joined`);
+                            addActivity({
+                                username: message.data.username,
+                                activity: 'joined the workspace'
+                            });
+                            break;
+                            
+                        case 'user_left':
+                            log(`👋 ${message.data.username} left`);
+                            addActivity({
+                                username: message.data.username,
+                                activity: 'left the workspace'
+                            });
+                            break;
+                            
+                        case 'cursor_update':
+                            updateCursor(message.data);
+                            break;
+                            
+                        case 'document_update':
+                            log(`📝 Document updated by ${message.data.username}`);
+                            addActivity({
+                                username: message.data.username,
+                                activity: 'edited the document'
+                            });
+                            break;
+                            
+                        case 'activity_update':
+                            addActivity(message.data);
+                            break;
+                            
+                        case 'user_typing':
+                            const typingMsg = message.data.is_typing ? 'started typing' : 'stopped typing';
+                            log(`⌨️ ${message.data.username} ${typingMsg}`);
+                            break;
+                            
+                        case 'pong':
+                            log('🏓 Pong received');
+                            break;
+                    }
+                } catch (error) {
+                    log(`❌ Error parsing message: ${error.message}`, 'error');
+                }
+            };
+            
+            ws.onclose = function(event) {
+                log(`🔌 Connection closed: ${event.code} ${event.reason}`);
+                updateConnectionStatus(false);
+                ws = null;
+            };
+            
+            ws.onerror = function(error) {
+                log(`❌ WebSocket error: ${error}`, 'error');
+                updateConnectionStatus(false);
+            };
+        }
+        
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                log('🔌 Disconnected');
+                updateConnectionStatus(false);
+            }
+        }
+        
+        function sendMessage(type, data) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('❌ Not connected to WebSocket', 'error');
+                return;
+            }
+            
+            const message = { type, data };
+            ws.send(JSON.stringify(message));
+            log(`📤 Sent: ${type}`);
+        }
+        
+        function sendCursorUpdate() {
+            sendMessage('cursor_update', {
+                position: { line: Math.floor(Math.random() * 7), column: Math.floor(Math.random() * 30) },
+                file_path: 'demo.js'
+            });
+        }
+        
+        function sendDocumentUpdate() {
+            sendMessage('document_update', {
+                document_id: 'demo.js',
+                operation: {
+                    type: 'insert',
+                    position: { line: 3, column: 0 },
+                    content: '// New line added!\n'
+                }
+            });
+        }
+        
+        function sendActivityUpdate() {
+            const activities = [
+                'viewing file',
+                'debugging code',
+                'reviewing changes',
+                'running tests',
+                'refactoring'
+            ];
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            
+            sendMessage('activity_update', {
+                activity: activity,
+                details: { file: 'demo.js' }
+            });
+        }
+        
+        function sendTypingIndicator() {
+            isTyping = !isTyping;
+            sendMessage('typing_indicator', {
+                is_typing: isTyping,
+                location: 'demo.js'
+            });
+        }
+        
+        // Send periodic pings when connected
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                sendMessage('ping', { timestamp: Date.now() });
+            }
+        }, 30000);
+        
+        // Add some helpful text
+        log('💡 Enter your JWT token and workspace ID, then click Connect to start!');
+        log('🔧 You can get a JWT token by logging in through the main application');
+    </script>
+</body>
+</html>

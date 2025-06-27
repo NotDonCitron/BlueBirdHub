@@ -79,6 +79,8 @@ def init_db():
     # Import all model modules to register them with SQLAlchemy
     from src.backend.models import (
         user, workspace, task, file_metadata,
-        supplier, team  # Added missing modules
+        supplier, team
     )
+    # Temporarily disabled to fix startup issues
+    # from src.backend.models import calendar, workflow, analytics, search
     Base.metadata.create_all(bind=engine)

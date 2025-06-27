@@ -11,6 +11,23 @@ from src.backend.models.team import (
     TaskAssignment, WorkspaceActivity, TaskComment,
     WorkspaceInvite
 )
+from src.backend.models.workflow import (
+    Workflow, WorkflowTemplate, WorkflowStep, WorkflowExecution,
+    WorkflowStepExecution, WorkflowTrigger, WorkflowVersion,
+    WorkflowSchedule, WorkflowWebhook, WorkflowAnalytics,
+    WorkflowShare, WorkflowStatus, WorkflowExecutionStatus,
+    TriggerType, ActionType, ConditionOperator
+)
+from src.backend.models.calendar import (
+    Calendar, CalendarIntegration, CalendarEvent, CalendarEventAttendee,
+    CalendarShare, CalendarConflict, CalendarSyncLog, TimeBlock,
+    CalendarProvider, CalendarEventStatus, CalendarEventVisibility,
+    CalendarEventRecurrenceType, CalendarSharePermission, SyncStatus
+)
+from src.backend.models.analytics import (
+    ActivityEvent, TimeTracking, ProductivityMetrics, TeamMetrics,
+    KPITracking, AnalyticsInsights, ReportGeneration
+)
 
 __all__ = [
     # User models
@@ -37,5 +54,45 @@ __all__ = [
     "TaskAssignment",
     "WorkspaceActivity",
     "TaskComment",
-    "WorkspaceInvite"
+    "WorkspaceInvite",
+    # Workflow models
+    "Workflow",
+    "WorkflowTemplate",
+    "WorkflowStep",
+    "WorkflowExecution",
+    "WorkflowStepExecution",
+    "WorkflowTrigger",
+    "WorkflowVersion",
+    "WorkflowSchedule",
+    "WorkflowWebhook",
+    "WorkflowAnalytics",
+    "WorkflowShare",
+    "WorkflowStatus",
+    "WorkflowExecutionStatus",
+    "TriggerType",
+    "ActionType",
+    "ConditionOperator",
+    # Calendar models
+    "Calendar",
+    "CalendarIntegration",
+    "CalendarEvent",
+    "CalendarEventAttendee",
+    "CalendarShare",
+    "CalendarConflict",
+    "CalendarSyncLog",
+    "TimeBlock",
+    "CalendarProvider",
+    "CalendarEventStatus",
+    "CalendarEventVisibility",
+    "CalendarEventRecurrenceType",
+    "CalendarSharePermission",
+    "SyncStatus",
+    # Analytics models
+    "ActivityEvent",
+    "TimeTracking",
+    "ProductivityMetrics",
+    "TeamMetrics",
+    "KPITracking",
+    "AnalyticsInsights",
+    "ReportGeneration"
 ]

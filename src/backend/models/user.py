@@ -27,6 +27,25 @@ class User(Base):
     workspace_activities = relationship("WorkspaceActivity", back_populates="user")
     task_comments = relationship("TaskComment", back_populates="user")
     
+    # Calendar relationships - re-enabled
+    calendars = relationship("Calendar", back_populates="user", cascade="all, delete-orphan")
+    calendar_integrations = relationship("CalendarIntegration", back_populates="user", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="user", cascade="all, delete-orphan")
+    calendar_attendees = relationship("CalendarEventAttendee", back_populates="user")
+    calendar_shares_received = relationship("CalendarShare", foreign_keys="CalendarShare.user_id", back_populates="user")
+    calendar_shares_given = relationship("CalendarShare", foreign_keys="CalendarShare.shared_by_user_id", back_populates="shared_by")
+    calendar_conflicts = relationship("CalendarConflict", foreign_keys="CalendarConflict.user_id", back_populates="user")
+    calendar_sync_logs = relationship("CalendarSyncLog", back_populates="user")
+    time_blocks = relationship("TimeBlock", back_populates="user", cascade="all, delete-orphan")
+    
+    # Analytics relationships - re-enabled
+    activity_events = relationship("ActivityEvent", back_populates="user", cascade="all, delete-orphan")
+    time_tracking = relationship("TimeTracking", back_populates="user", cascade="all, delete-orphan")
+    productivity_metrics = relationship("ProductivityMetrics", back_populates="user", cascade="all, delete-orphan")
+    kpis = relationship("KPITracking", back_populates="user", cascade="all, delete-orphan")
+    analytics_insights = relationship("AnalyticsInsights", foreign_keys="AnalyticsInsights.user_id", back_populates="user", cascade="all, delete-orphan")
+    generated_reports = relationship("ReportGeneration", back_populates="user", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}')>"
 

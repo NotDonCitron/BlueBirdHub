@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import AuthenticatedApp from './components/AuthenticatedApp';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ApiProvider } from './contexts/ApiContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { I18nProvider } from './contexts/I18nContext';
 import { performanceMonitor } from './utils/performanceMonitor';
 import { resourcePreloader } from './utils/resourcePreloader';
 import { preloadCriticalComponents } from './components/LazyComponents';
+import './config/i18n'; // Initialize i18n
 import './styles/App.css';
+import './styles/rtl.css';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -80,15 +83,24 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Router>
-        <ThemeProvider>
-          <ApiProvider apiStatus={apiStatus} onRetryConnection={checkApiConnection}>
-            <AuthProvider>
-              <div className="app">
-                <AuthenticatedApp />
-              </div>
-            </AuthProvider>
-          </ApiProvider>
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            <ApiProvider apiStatus={apiStatus} onRetryConnection={checkApiConnection}>
+              <AuthProvider>
+                <Suspense fallback={
+                  <div className="app-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Loading translations...</p>
+                  </div>
+                }>
+                  <div className="app">
+                    <AuthenticatedApp />
+                  </div>
+                </Suspense>
+              </AuthProvider>
+            </ApiProvider>
+          </ThemeProvider>
+        </I18nProvider>
       </Router>
     </ErrorBoundary>
   );

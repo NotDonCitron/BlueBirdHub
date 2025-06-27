@@ -1,0 +1,62 @@
+name: "BlueBirdHub CodeQL Configuration"
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths-ignore:
+  - "node_modules"
+  - "dist"
+  - "build"
+  - "__tests__"
+  - "tests"
+  - "**/*.test.js"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.js"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"
+  - "docs"
+  - "*.md"
+
+paths:
+  - "src"
+  - "scripts"
+
+# Python specific configuration
+python:
+  setup:
+    - pip install -r requirements.txt
+    - pip install -r requirements-archon.txt
+
+# JavaScript/TypeScript specific configuration  
+javascript:
+  setup:
+    - npm install
+
+# Custom queries for Archon AI integration
+query-filters:
+  - exclude:
+      id: js/unused-local-variable
+      
+  - exclude:
+      id: py/unused-import
+      # Archon modules may have imports used dynamically
+      
+  - include:
+      tags:
+        - security
+        - maintainability
+        - reliability
+        
+# Security-focused configuration for AI/ML code
+security:
+  # API key and secret detection
+  - check-secrets: true
+  - validate-inputs: true
+  - sanitize-outputs: true
+  
+  # AI/ML specific security checks
+  - model-injection: true
+  - prompt-injection: true
+  - data-leakage: true

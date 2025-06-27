@@ -1,0 +1,132 @@
+{
+  "success": {
+    "operation_completed": "Operation completed successfully",
+    "created": "{{resource}} created successfully",
+    "updated": "{{resource}} updated successfully",
+    "deleted": "{{resource}} deleted successfully",
+    "saved": "Changes saved successfully",
+    "uploaded": "File uploaded successfully",
+    "downloaded": "File downloaded successfully",
+    "sent": "{{item}} sent successfully",
+    "processed": "{{item}} processed successfully",
+    "synchronized": "Data synchronized successfully"
+  },
+  "workspace": {
+    "created": "Workspace '{{name}}' created successfully",
+    "updated": "Workspace updated successfully",
+    "deleted": "Workspace deleted successfully",
+    "archived": "Workspace archived successfully",
+    "restored": "Workspace restored successfully",
+    "shared": "Workspace shared successfully with {{count}} user",
+    "shared_plural": "Workspace shared successfully with {{count}} users",
+    "member_added": "{{user}} added to workspace",
+    "member_removed": "{{user}} removed from workspace",
+    "permission_updated": "Permissions updated for {{user}}"
+  },
+  "task": {
+    "created": "Task '{{title}}' created successfully",
+    "updated": "Task updated successfully", 
+    "deleted": "Task deleted successfully",
+    "completed": "Task marked as completed",
+    "assigned": "Task assigned to {{user}}",
+    "unassigned": "Task unassigned",
+    "due_date_set": "Due date set for {{date}}",
+    "priority_updated": "Task priority updated to {{priority}}",
+    "status_changed": "Task status changed to {{status}}"
+  },
+  "file": {
+    "uploaded": "{{filename}} uploaded successfully",
+    "deleted": "{{filename}} deleted successfully",
+    "moved": "{{filename}} moved to {{destination}}",
+    "copied": "{{filename}} copied successfully",
+    "renamed": "File renamed to {{new_name}}",
+    "shared": "{{filename}} shared successfully",
+    "processed": "{{filename}} processed successfully",
+    "scanned": "{{count}} file scanned",
+    "scanned_plural": "{{count}} files scanned",
+    "organized": "Files organized automatically"
+  },
+  "user": {
+    "profile_updated": "Profile updated successfully",
+    "password_changed": "Password changed successfully",
+    "email_verified": "Email address verified successfully",
+    "preferences_saved": "Preferences saved successfully",
+    "avatar_updated": "Profile picture updated successfully",
+    "account_activated": "Account activated successfully",
+    "account_deactivated": "Account deactivated successfully"
+  },
+  "auth": {
+    "login_successful": "Logged in successfully",
+    "logout_successful": "Logged out successfully",
+    "registration_successful": "Registration successful. Please check your email for verification",
+    "password_reset_sent": "Password reset instructions sent to your email",
+    "password_reset_successful": "Password reset successfully",
+    "email_verification_sent": "Verification email sent",
+    "two_factor_enabled": "Two-factor authentication enabled",
+    "two_factor_disabled": "Two-factor authentication disabled"
+  },
+  "collaboration": {
+    "invitation_sent": "Invitation sent to {{email}}",
+    "invitation_accepted": "{{user}} accepted the invitation",
+    "invitation_declined": "{{user}} declined the invitation",
+    "comment_added": "Comment added successfully",
+    "comment_updated": "Comment updated successfully",
+    "comment_deleted": "Comment deleted successfully",
+    "changes_synced": "Changes synchronized with collaborators",
+    "permissions_updated": "Collaboration permissions updated"
+  },
+  "ai": {
+    "analysis_completed": "AI analysis completed",
+    "suggestions_generated": "AI suggestions generated",
+    "content_generated": "Content generated successfully",
+    "classification_completed": "Content classification completed",
+    "recommendations_updated": "Recommendations updated",
+    "processing_started": "AI processing started in background",
+    "model_trained": "AI model training completed"
+  },
+  "automation": {
+    "rule_created": "Automation rule created successfully",
+    "rule_updated": "Automation rule updated successfully",
+    "rule_deleted": "Automation rule deleted successfully",
+    "rule_activated": "Automation rule activated",
+    "rule_deactivated": "Automation rule deactivated",
+    "workflow_executed": "Workflow executed successfully",
+    "trigger_activated": "Automation trigger activated",
+    "action_completed": "Automated action completed"
+  },
+  "integration": {
+    "connected": "Successfully connected to {{service}}",
+    "disconnected": "Disconnected from {{service}}",
+    "synchronized": "Data synchronized with {{service}}",
+    "imported": "Data imported from {{service}}",
+    "exported": "Data exported to {{service}}",
+    "webhook_configured": "Webhook configured successfully",
+    "api_key_updated": "API key updated successfully"
+  },
+  "search": {
+    "results_found": "Found {{count}} result",
+    "results_found_plural": "Found {{count}} results",
+    "index_updated": "Search index updated",
+    "query_saved": "Search query saved",
+    "filter_applied": "Filter applied successfully"
+  },
+  "analytics": {
+    "report_generated": "Report generated successfully",
+    "data_exported": "Analytics data exported",
+    "dashboard_updated": "Dashboard updated",
+    "metric_calculated": "Metrics calculated successfully"
+  },
+  "backup": {
+    "created": "Backup created successfully",
+    "restored": "Data restored from backup",
+    "deleted": "Backup deleted successfully",
+    "scheduled": "Automated backup scheduled",
+    "completed": "Backup operation completed"
+  },
+  "settings": {
+    "updated": "Settings updated successfully",
+    "reset": "Settings reset to defaults",
+    "imported": "Settings imported successfully",
+    "exported": "Settings exported successfully"
+  }
+}

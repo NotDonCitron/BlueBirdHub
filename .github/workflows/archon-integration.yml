@@ -1,0 +1,509 @@
+name: Archon AI Integration Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/archon_**'
+      - 'src/backend/archon_**'
+      - 'requirements-archon.txt'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/archon_**'
+      - 'src/backend/archon_**'
+      - 'requirements-archon.txt'
+  schedule:
+    # Run Archon tests daily at 1 AM UTC
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - functional
+        - integration
+        - performance
+        - demo
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Archon Environment Setup
+  archon-setup:
+    name: Archon Environment Setup & Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    outputs:
+      archon-ready: ${{ steps.setup-check.outputs.ready }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install Archon dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Validate API keys (without exposing them)
+      id: api-validation
+      run: |
+        python -c "
+        import os
+        import sys
+        
+        required_keys = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY']
+        missing_keys = []
+        
+        for key in required_keys:
+            if not os.getenv(key):
+                missing_keys.append(key)
+        
+        if missing_keys:
+            print(f'Missing API keys: {missing_keys}')
+            print('api_keys_valid=false')
+            sys.exit(1)
+        else:
+            print('All required API keys are present')
+            print('api_keys_valid=true')
+        "
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      continue-on-error: true
+
+    - name: Test Archon core modules
+      run: |
+        python -c "
+        try:
+            from scripts.archon_setup import ArchonSetup
+            from scripts.archon_integration import ArchonIntegration
+            print('✅ Archon modules loaded successfully')
+        except ImportError as e:
+            print(f'❌ Failed to load Archon modules: {e}')
+            exit(1)
+        "
+
+    - name: Setup check
+      id: setup-check
+      run: |
+        if [[ "${{ steps.api-validation.outcome }}" == "success" ]]; then
+          echo "ready=true" >> $GITHUB_OUTPUT
+          echo "✅ Archon environment ready"
+        else
+          echo "ready=false" >> $GITHUB_OUTPUT
+          echo "❌ Archon environment not ready"
+        fi
+
+  # Archon Functional Tests
+  archon-functional-tests:
+    name: Archon Functional Tests
+    runs-on: ubuntu-latest
+    needs: archon-setup
+    if: needs.archon-setup.outputs.archon-ready == 'true'
+    timeout-minutes: 45
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Setup test database
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+      run: |
+        python scripts/init_database.py
+
+    - name: Run Archon functional test suite
+      id: functional-tests
+      run: |
+        python scripts/archon_functional_test.py --output-json=archon-functional-results.json
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        SECRET_KEY: test_secret_key
+        JWT_SECRET_KEY: test_jwt_secret
+
+    - name: Parse functional test results
+      run: |
+        python -c "
+        import json
+        with open('archon-functional-results.json', 'r') as f:
+            results = json.load(f)
+        
+        print(f'Functional Tests Summary:')
+        print(f'  Total Tests: {results.get(\"total_tests\", 0)}')
+        print(f'  Passed: {results.get(\"passed\", 0)}')
+        print(f'  Failed: {results.get(\"failed\", 0)}')
+        print(f'  Success Rate: {results.get(\"success_rate\", 0):.2f}%')
+        
+        if results.get('failed', 0) > 0:
+            print('Failed Tests:')
+            for test in results.get('failed_tests', []):
+                print(f'  - {test}')
+        "
+
+    - name: Upload functional test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-functional-results
+        path: archon-functional-results.json
+
+  # Archon Integration Tests
+  archon-integration-tests:
+    name: Archon Integration Tests
+    runs-on: ubuntu-latest
+    needs: archon-setup
+    if: needs.archon-setup.outputs.archon-ready == 'true'
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Run Archon integration tests
+      run: |
+        python scripts/archon_integration.py --test-mode --output-json=archon-integration-results.json
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Test AI service fallback mechanisms
+      run: |
+        python -c "
+        from src.backend.services.enhanced_ai_service import EnhancedAIService
+        import asyncio
+        
+        async def test_fallback():
+            service = EnhancedAIService()
+            # Test with invalid primary key to trigger fallback
+            result = await service.test_fallback_mechanism()
+            print(f'Fallback test result: {result}')
+        
+        asyncio.run(test_fallback())
+        "
+      env:
+        ANTHROPIC_API_KEY: "invalid_key_to_test_fallback"
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-integration-results
+        path: archon-integration-results.json
+
+  # Archon Performance Tests
+  archon-performance-tests:
+    name: Archon Performance Tests
+    runs-on: ubuntu-latest
+    needs: archon-setup
+    if: needs.archon-setup.outputs.archon-ready == 'true'
+    timeout-minutes: 20
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Run Archon performance benchmarks
+      run: |
+        python scripts/archon_performance_test.py --benchmark-mode --output-json=archon-performance-results.json
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Analyze performance metrics
+      run: |
+        python -c "
+        import json
+        with open('archon-performance-results.json', 'r') as f:
+            results = json.load(f)
+        
+        print('Archon Performance Metrics:')
+        print(f'  Average Response Time: {results.get(\"avg_response_time\", 0):.2f}s')
+        print(f'  Max Response Time: {results.get(\"max_response_time\", 0):.2f}s')
+        print(f'  Min Response Time: {results.get(\"min_response_time\", 0):.2f}s')
+        print(f'  Throughput: {results.get(\"throughput\", 0):.2f} requests/sec')
+        print(f'  Error Rate: {results.get(\"error_rate\", 0):.2f}%')
+        
+        # Performance thresholds
+        avg_threshold = 5.0  # seconds
+        error_threshold = 5.0  # percent
+        
+        if results.get('avg_response_time', 0) > avg_threshold:
+            print(f'⚠️ Average response time exceeds threshold ({avg_threshold}s)')
+        
+        if results.get('error_rate', 0) > error_threshold:
+            print(f'⚠️ Error rate exceeds threshold ({error_threshold}%)')
+        "
+
+    - name: Upload performance test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-performance-results
+        path: archon-performance-results.json
+
+  # Archon Demo Tests
+  archon-demo:
+    name: Archon Demo & Showcase
+    runs-on: ubuntu-latest
+    needs: [archon-functional-tests, archon-integration-tests]
+    if: needs.archon-setup.outputs.archon-ready == 'true' && (github.event.inputs.test_suite == 'demo' || github.event.inputs.test_suite == 'all')
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-archon.txt
+
+    - name: Run Archon demo
+      run: |
+        python scripts/archon_demo.py --demo-mode --output-json=archon-demo-results.json
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    - name: Generate demo report
+      run: |
+        python -c "
+        import json
+        with open('archon-demo-results.json', 'r') as f:
+            results = json.load(f)
+        
+        print('🤖 Archon AI Demo Results:')
+        print('='*50)
+        
+        for demo in results.get('demos', []):
+            print(f'Demo: {demo.get(\"name\", \"Unknown\")}')
+            print(f'Status: {demo.get(\"status\", \"Unknown\")}')
+            print(f'Duration: {demo.get(\"duration\", 0):.2f}s')
+            print(f'Description: {demo.get(\"description\", \"\")}')
+            print('-'*30)
+        
+        success_count = sum(1 for demo in results.get('demos', []) if demo.get('status') == 'success')
+        total_count = len(results.get('demos', []))
+        print(f'Overall Success Rate: {success_count}/{total_count} ({(success_count/total_count*100):.1f}%)')
+        "
+
+    - name: Upload demo results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-demo-results
+        path: archon-demo-results.json
+
+  # Archon Test Summary & Reporting
+  archon-test-summary:
+    name: Archon Test Summary & Reporting
+    runs-on: ubuntu-latest
+    needs: [archon-functional-tests, archon-integration-tests, archon-performance-tests]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all Archon test results
+      uses: actions/download-artifact@v3
+      with:
+        path: archon-test-results
+
+    - name: Setup Python for analysis
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Generate comprehensive test report
+      run: |
+        python -c "
+        import json
+        import os
+        from datetime import datetime
+        
+        report_data = {
+            'timestamp': datetime.now().isoformat(),
+            'commit': os.getenv('GITHUB_SHA', 'unknown'),
+            'branch': os.getenv('GITHUB_REF_NAME', 'unknown'),
+            'tests': {}
+        }
+        
+        # Load all test results
+        results_dir = 'archon-test-results'
+        if os.path.exists(results_dir):
+            for item in os.listdir(results_dir):
+                item_path = os.path.join(results_dir, item)
+                if os.path.isdir(item_path):
+                    json_files = [f for f in os.listdir(item_path) if f.endswith('.json')]
+                    for json_file in json_files:
+                        try:
+                            with open(os.path.join(item_path, json_file), 'r') as f:
+                                test_data = json.load(f)
+                                test_type = json_file.replace('.json', '').replace('archon-', '')
+                                report_data['tests'][test_type] = test_data
+                        except Exception as e:
+                            print(f'Error loading {json_file}: {e}')
+        
+        # Generate summary
+        print('🤖 ARCHON AI SYSTEM TEST REPORT')
+        print('='*60)
+        print(f'Timestamp: {report_data[\"timestamp\"]}')
+        print(f'Commit: {report_data[\"commit\"]}')
+        print(f'Branch: {report_data[\"branch\"]}')
+        print('')
+        
+        total_tests = 0
+        total_passed = 0
+        
+        for test_type, data in report_data['tests'].items():
+            print(f'{test_type.upper()} TESTS:')
+            passed = data.get('passed', 0)
+            failed = data.get('failed', 0)
+            total = passed + failed
+            
+            if total > 0:
+                success_rate = (passed / total) * 100
+                print(f'  Passed: {passed}/{total} ({success_rate:.1f}%)')
+                total_tests += total
+                total_passed += passed
+            else:
+                print('  No test data available')
+            print('')
+        
+        if total_tests > 0:
+            overall_success = (total_passed / total_tests) * 100
+            print(f'OVERALL SUCCESS RATE: {total_passed}/{total_tests} ({overall_success:.1f}%)')
+        
+        # Save comprehensive report
+        with open('archon-comprehensive-report.json', 'w') as f:
+            json.dump(report_data, f, indent=2)
+        " > archon-test-summary.txt
+        
+        cat archon-test-summary.txt
+
+    - name: Check for test failures
+      id: failure-check
+      run: |
+        if grep -q "0.0%" archon-test-summary.txt || grep -q "failed" archon-test-summary.txt; then
+          echo "has-failures=true" >> $GITHUB_OUTPUT
+        else
+          echo "has-failures=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create issue for Archon test failures
+      if: steps.failure-check.outputs.has-failures == 'true'
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        title: 'Archon AI System Test Failures - ${{ github.sha }}'
+        content-filepath: archon-test-summary.txt
+        labels: |
+          archon
+          ai-system
+          test-failure
+          needs-investigation
+
+    - name: Comment on PR with Archon test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('archon-test-summary.txt', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🤖 Archon AI System Test Results\n\n\`\`\`\n${summary}\n\`\`\``
+          });
+
+    - name: Upload comprehensive test report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: archon-comprehensive-report
+        path: |
+          archon-test-summary.txt
+          archon-comprehensive-report.json

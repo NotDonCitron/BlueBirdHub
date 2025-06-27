@@ -20,7 +20,7 @@ class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
 
-  constructor(baseUrl: string = 'http://127.0.0.1:8000') {
+  constructor(baseUrl: string = 'http://127.0.0.1:8888') {
     this.baseUrl = baseUrl;
     this.token = localStorage.getItem('auth_token');
   }

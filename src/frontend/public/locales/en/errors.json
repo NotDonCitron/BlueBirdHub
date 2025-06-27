@@ -1,0 +1,104 @@
+{
+  "validation": {
+    "required": "This field is required",
+    "invalid_email": "Invalid email address",
+    "invalid_password": "Password must be at least 8 characters long",
+    "passwords_mismatch": "Passwords do not match",
+    "invalid_format": "Invalid format",
+    "too_short": "Value is too short (minimum {{min}} characters)",
+    "too_long": "Value is too long (maximum {{max}} characters)",
+    "invalid_file_type": "Invalid file type. Allowed types: {{types}}",
+    "file_too_large": "File is too large. Maximum size: {{max_size}}",
+    "invalid_date": "Invalid date format",
+    "future_date_required": "Date must be in the future",
+    "past_date_required": "Date must be in the past"
+  },
+  "authentication": {
+    "invalid_credentials": "Invalid username or password",
+    "account_locked": "Account has been temporarily locked due to too many failed login attempts",
+    "session_expired": "Your session has expired. Please log in again",
+    "unauthorized": "You are not authorized to access this resource",
+    "token_invalid": "Invalid authentication token",
+    "token_expired": "Authentication token has expired",
+    "email_not_verified": "Please verify your email address before proceeding",
+    "account_disabled": "Your account has been disabled. Please contact support"
+  },
+  "authorization": {
+    "insufficient_permissions": "You do not have sufficient permissions to perform this action",
+    "resource_forbidden": "Access to this resource is forbidden",
+    "workspace_access_denied": "You do not have access to this workspace",
+    "admin_required": "Administrator privileges required",
+    "owner_required": "Only the owner can perform this action"
+  },
+  "server": {
+    "internal_error": "An internal server error occurred. Please try again later",
+    "service_unavailable": "Service is temporarily unavailable. Please try again later",
+    "database_error": "Database error occurred. Please contact support if the problem persists",
+    "timeout": "Request timed out. Please try again",
+    "rate_limit_exceeded": "Too many requests. Please wait before trying again",
+    "maintenance_mode": "System is currently under maintenance. Please try again later"
+  },
+  "network": {
+    "connection_failed": "Failed to connect to the server",
+    "request_failed": "Request failed. Please check your connection and try again",
+    "upload_failed": "File upload failed. Please try again",
+    "download_failed": "File download failed. Please try again"
+  },
+  "workspace": {
+    "not_found": "Workspace not found",
+    "creation_failed": "Failed to create workspace",
+    "update_failed": "Failed to update workspace",
+    "deletion_failed": "Failed to delete workspace",
+    "duplicate_name": "A workspace with this name already exists",
+    "storage_limit_exceeded": "Workspace storage limit exceeded"
+  },
+  "task": {
+    "not_found": "Task not found",
+    "creation_failed": "Failed to create task",
+    "update_failed": "Failed to update task",
+    "deletion_failed": "Failed to delete task",
+    "dependency_conflict": "Task dependency conflict detected",
+    "deadline_passed": "Task deadline has already passed",
+    "invalid_status": "Invalid task status"
+  },
+  "file": {
+    "not_found": "File not found",
+    "upload_failed": "File upload failed",
+    "download_failed": "File download failed",
+    "deletion_failed": "Failed to delete file",
+    "processing_failed": "File processing failed",
+    "virus_detected": "Virus detected in uploaded file",
+    "corrupted": "File appears to be corrupted",
+    "unsupported_format": "Unsupported file format"
+  },
+  "ai": {
+    "service_unavailable": "AI service is currently unavailable",
+    "quota_exceeded": "AI processing quota exceeded",
+    "processing_failed": "AI processing failed. Please try again",
+    "invalid_input": "Invalid input for AI processing",
+    "model_not_available": "Requested AI model is not available"
+  },
+  "collaboration": {
+    "user_not_found": "User not found",
+    "invitation_failed": "Failed to send invitation",
+    "permission_denied": "Permission denied for collaboration action",
+    "conflict_detected": "Collaboration conflict detected",
+    "sync_failed": "Failed to synchronize changes"
+  },
+  "integration": {
+    "connection_failed": "Failed to connect to external service",
+    "authentication_failed": "Authentication with external service failed",
+    "sync_error": "Synchronization error with external service",
+    "api_limit_exceeded": "External API rate limit exceeded",
+    "service_error": "External service error: {{error}}"
+  },
+  "general": {
+    "unknown_error": "An unknown error occurred",
+    "operation_failed": "Operation failed",
+    "resource_not_found": "Resource not found",
+    "bad_request": "Bad request. Please check your input",
+    "conflict": "Conflict detected. Please refresh and try again",
+    "gone": "The requested resource is no longer available",
+    "unprocessable_entity": "Unable to process the request. Please check your data"
+  }
+}

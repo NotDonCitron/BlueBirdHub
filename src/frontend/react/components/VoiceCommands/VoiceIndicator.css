@@ -1,0 +1,54 @@
+.voice-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 1001;
+  backdrop-filter: blur(10px);
+}
+
+.voice-canvas {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+}
+
+.voice-status {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.voice-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+/* Dark mode */
+[data-theme="dark"] .voice-indicator {
+  background: rgba(30, 30, 30, 0.95);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.voice-indicator {
+  animation: fadeIn 0.3s ease-out;
+}

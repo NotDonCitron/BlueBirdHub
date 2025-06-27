@@ -1,0 +1,336 @@
+/* Language Switcher Component Styles */
+
+.language-switcher {
+  position: relative;
+  display: inline-block;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* RTL Support */
+.language-switcher.rtl {
+  direction: rtl;
+}
+
+.language-switcher.rtl .language-option-content {
+  direction: rtl;
+  text-align: right;
+}
+
+.language-switcher.rtl .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* Button Styles */
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #333333);
+  transition: all 0.2s ease;
+  min-width: 120px;
+  justify-content: space-between;
+}
+
+.language-button:hover {
+  background: var(--bg-hover, #e9ecef);
+  border-color: var(--border-hover, #ced4da);
+}
+
+.language-button:focus {
+  outline: 2px solid var(--focus-color, #007bff);
+  outline-offset: 2px;
+}
+
+.language-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.language-button.open {
+  background: var(--bg-active, #e9ecef);
+  border-color: var(--border-active, #007bff);
+}
+
+/* Button Variants */
+.language-button.compact {
+  min-width: 100px;
+  padding: 6px 10px;
+}
+
+.language-button.icon-only {
+  min-width: 40px;
+  padding: 8px;
+  justify-content: center;
+}
+
+.language-button.full {
+  min-width: 160px;
+  padding: 10px 14px;
+}
+
+/* Current Language Display */
+.language-current-compact,
+.language-current-full {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.language-current-full {
+  gap: 8px;
+}
+
+.language-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.language-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.language-code {
+  font-size: 12px;
+  color: var(--text-secondary, #666666);
+  font-weight: 400;
+}
+
+/* Dropdown Arrow */
+.dropdown-arrow {
+  font-size: 12px;
+  color: var(--text-secondary, #666666);
+  transition: transform 0.2s ease;
+  margin-left: auto;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(90deg);
+}
+
+/* Dropdown Menu */
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
+.language-dropdown.top {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.language-dropdown.left {
+  left: auto;
+  right: 0;
+}
+
+/* Dropdown Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Language Options */
+.language-option {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.language-option:hover {
+  background: var(--bg-hover, #f8f9fa);
+}
+
+.language-option:focus {
+  background: var(--bg-hover, #f8f9fa);
+  outline: 2px solid var(--focus-color, #007bff);
+  outline-offset: -2px;
+}
+
+.language-option.selected {
+  background: var(--bg-selected, #e3f2fd);
+  color: var(--text-selected, #1976d2);
+}
+
+.language-option.selected:hover {
+  background: var(--bg-selected-hover, #bbdefb);
+}
+
+.language-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Option Content */
+.language-option-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.language-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.language-native {
+  font-weight: 500;
+  color: var(--text-primary, #333333);
+  font-size: 14px;
+}
+
+.language-english {
+  font-size: 12px;
+  color: var(--text-secondary, #666666);
+  font-weight: 400;
+}
+
+.checkmark {
+  color: var(--success-color, #28a745);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Loading State */
+.language-loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary, #666666);
+  z-index: 1001;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .language-switcher {
+    --bg-primary: #2d3748;
+    --bg-secondary: #4a5568;
+    --bg-hover: #2d3748;
+    --bg-active: #2b6cb0;
+    --bg-selected: #2b6cb0;
+    --bg-selected-hover: #3182ce;
+    --border-color: #4a5568;
+    --border-hover: #718096;
+    --border-active: #3182ce;
+    --text-primary: #f7fafc;
+    --text-secondary: #a0aec0;
+    --text-selected: #ffffff;
+    --focus-color: #3182ce;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .language-button {
+    border-width: 2px;
+  }
+  
+  .language-option:focus {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .language-button,
+  .dropdown-arrow,
+  .language-option {
+    transition: none;
+  }
+  
+  .language-dropdown {
+    animation: none;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .language-button {
+    min-width: 80px;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  
+  .language-button.full {
+    min-width: 120px;
+  }
+  
+  .language-dropdown {
+    left: -50%;
+    right: -50%;
+    max-width: 250px;
+  }
+  
+  .language-option-content {
+    padding: 10px 12px;
+  }
+}
+
+/* Accessibility Focus Indicators */
+.language-switcher:focus-within {
+  outline: 2px solid var(--focus-color, #007bff);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* RTL-specific adjustments */
+.language-switcher.rtl .language-dropdown {
+  text-align: right;
+}
+
+.language-switcher.rtl .language-option-content {
+  flex-direction: row-reverse;
+}
+
+.language-switcher.rtl .checkmark {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* Print Styles */
+@media print {
+  .language-switcher {
+    display: none;
+  }
+}

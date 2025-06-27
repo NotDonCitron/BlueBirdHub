@@ -369,3 +369,25 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
         "email": current_user.email,
         "is_active": current_user.is_active
     }
+
+
+@router.post(
+    "/logout",
+    summary="Logout user",
+    description="Logout the current user (token invalidation should be implemented if needed)"
+)
+async def logout(current_user: User = Depends(get_current_active_user)):
+    """
+    Logout the current user.
+    
+    In a production environment, you might want to:
+    - Blacklist the token
+    - Clear server-side sessions
+    - Log the logout event
+    
+    Returns:
+        dict: Logout confirmation message
+    """
+    # Here you could implement token blacklisting if needed
+    # For now, we'll just return a success message
+    return {"message": "Successfully logged out", "username": current_user.username}

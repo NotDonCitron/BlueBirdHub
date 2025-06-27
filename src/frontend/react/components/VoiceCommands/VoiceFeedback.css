@@ -1,0 +1,165 @@
+.voice-feedback {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  cursor: pointer;
+  z-index: 1003;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+  transition: all 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.voice-feedback.fade-out {
+  animation: slideUp 0.3s ease-in;
+  opacity: 0;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.voice-feedback-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.voice-feedback-content i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.voice-feedback-content span {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+.voice-feedback-progress {
+  height: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.voice-feedback-progress-bar {
+  height: 100%;
+  background: currentColor;
+  transition: width 0.1s linear;
+}
+
+/* Type variations */
+.voice-feedback.success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.voice-feedback.success .voice-feedback-content i {
+  color: #10b981;
+}
+
+.voice-feedback.success .voice-feedback-progress-bar {
+  background: #10b981;
+}
+
+.voice-feedback.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.voice-feedback.error .voice-feedback-content i {
+  color: #ef4444;
+}
+
+.voice-feedback.error .voice-feedback-progress-bar {
+  background: #ef4444;
+}
+
+.voice-feedback.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.voice-feedback.info .voice-feedback-content i {
+  color: #3b82f6;
+}
+
+.voice-feedback.info .voice-feedback-progress-bar {
+  background: #3b82f6;
+}
+
+.voice-feedback.warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.voice-feedback.warning .voice-feedback-content i {
+  color: #f59e0b;
+}
+
+.voice-feedback.warning .voice-feedback-progress-bar {
+  background: #f59e0b;
+}
+
+/* Dark mode */
+[data-theme="dark"] .voice-feedback {
+  background: var(--dark-bg-primary);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .voice-feedback-content span {
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .voice-feedback.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-theme="dark"] .voice-feedback.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .voice-feedback.info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] .voice-feedback.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .voice-feedback {
+    min-width: 90%;
+    max-width: 90%;
+  }
+}

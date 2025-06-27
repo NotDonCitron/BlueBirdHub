@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
+import asyncio
 import os
 from pathlib import Path
 from loguru import logger
@@ -15,7 +16,7 @@ try:
 except ImportError:
     logger.warning("python-dotenv not installed, using system environment variables only")
 
-from src.backend.database.database import init_db
+from src.backend.database.database import init_db, SessionLocal
 from src.backend.api.ai import router as ai_router
 from src.backend.api.workspaces import router as workspaces_router
 from src.backend.api.workspaces_bulk import router as workspaces_bulk_router
@@ -28,10 +29,18 @@ from src.backend.api.suppliers import router as suppliers_router
 from src.backend.api.performance import router as performance_router
 from src.backend.api.smart_organization import router as smart_organization_router
 from src.backend.api.automation import router as automation_router
-# Temporarily disabled until aiohttp is installed
+from src.backend.api.websocket import router as websocket_router
+from src.backend.api.calendar import router as calendar_router
+# Temporarily disabled advanced features for testing
+# from src.backend.api.voice import router as voice_router
+# from src.backend.api.workflows import router as workflows_router
 # from src.backend.api.mcp_integration import router as mcp_router
 from src.backend.routes.auth import router as auth_router
 from src.backend.docs.swagger_ui import setup_custom_swagger_ui, get_openapi_schema
+from src.backend.services.websocket_manager import periodic_cleanup
+# from src.backend.services.voice_recognition_service import voice_recognition_service
+# from src.backend.services.workflow_scheduler import workflow_scheduler
+# from src.backend.services.workflow_template_engine import workflow_template_engine
 
 # Configure logger
 logger.add("logs/ordnungshub.log", rotation="10 MB")
@@ -55,8 +64,53 @@ async def lifespan(app: FastAPI):
         logger.info("Database seeding completed")
     except Exception as e:
         logger.warning(f"Database seeding skipped: {e}")
+    
+    # Start background WebSocket cleanup task
+    cleanup_task = asyncio.create_task(periodic_cleanup())
+    logger.info("WebSocket cleanup task started")
+    
+    # Initialize voice recognition service
+    try:
+        await voice_recognition_service.initialize()
+        logger.info("Voice recognition service initialized")
+    except Exception as e:
+        logger.warning(f"Voice recognition service initialization failed: {e}")
+    
+    # Initialize workflow services
+    try:
+        # Initialize built-in workflow templates
+        workflow_template_engine.initialize_built_in_templates(SessionLocal())
+        logger.info("Workflow templates initialized")
+        
+        # Start workflow scheduler
+        await workflow_scheduler.start()
+        logger.info("Workflow scheduler started")
+    except Exception as e:
+        logger.warning(f"Workflow services initialization failed: {e}")
         
     yield
+    
+    # Cancel cleanup task on shutdown
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        logger.info("WebSocket cleanup task cancelled")
+    
+    # Shutdown voice recognition service
+    try:
+        await voice_recognition_service.shutdown()
+        logger.info("Voice recognition service shutdown")
+    except Exception as e:
+        logger.warning(f"Voice recognition service shutdown failed: {e}")
+    
+    # Shutdown workflow services
+    try:
+        await workflow_scheduler.stop()
+        logger.info("Workflow scheduler stopped")
+    except Exception as e:
+        logger.warning(f"Workflow scheduler shutdown failed: {e}")
+    
     # Shutdown
     logger.info("OrdnungsHub backend shutting down...")
 
@@ -204,6 +258,30 @@ app = FastAPI(
                 "description": "Performance Monitoring Guide",
                 "url": "https://docs.ordnungshub.com/performance"
             }
+        },
+        {
+            "name": "websocket",
+            "description": "Real-time WebSocket connections for collaboration",
+            "externalDocs": {
+                "description": "WebSocket API Guide",
+                "url": "https://docs.ordnungshub.com/websocket"
+            }
+        },
+        {
+            "name": "calendar",
+            "description": "Comprehensive calendar integration with Google Calendar and Microsoft Outlook",
+            "externalDocs": {
+                "description": "Calendar Integration Guide",
+                "url": "https://docs.ordnungshub.com/calendar"
+            }
+        },
+        {
+            "name": "workflows",
+            "description": "Automated workflow templates and execution engine with visual designer",
+            "externalDocs": {
+                "description": "Workflow Automation Guide",
+                "url": "https://docs.ordnungshub.com/workflows"
+            }
         }
     ],
     lifespan=lifespan,
@@ -249,7 +327,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(self), geolocation=()"
     
     # HTTPS only in production
     if os.getenv("NODE_ENV") == "production":
@@ -304,7 +382,11 @@ app.include_router(suppliers_router)
 app.include_router(performance_router)
 app.include_router(smart_organization_router)
 app.include_router(automation_router)
-# Temporarily disabled until aiohttp is installed
+app.include_router(websocket_router)
+app.include_router(calendar_router)
+# Temporarily disabled advanced routers for testing
+# app.include_router(voice_router)
+# app.include_router(workflows_router)
 # app.include_router(mcp_router)
 
 # Setup custom Swagger UI

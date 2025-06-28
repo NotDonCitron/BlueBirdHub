@@ -239,7 +239,7 @@ async def update_taskmaster_task_status(
 @router.post("/taskmaster/{task_id}/expand")
 async def expand_taskmaster_task(
     task_id: str,
-    expand_data: Dict[str, Any] = None
+    expand_data: Optional[Dict[str, Any]] = None
 ):
     """Break down a complex task into subtasks using AI"""
     try:
@@ -372,8 +372,8 @@ async def sync_with_taskmaster(db: Session = Depends(get_db)):
             {
                 "title": task.title,
                 "description": task.description,
-                "status": task.status.value.lower() if task.status else "pending",
-                "priority": task.priority.value.lower() if task.priority else "medium",
+                "status": task.status.value.lower() if task.status is not None else "pending",
+                "priority": task.priority.value.lower() if task.priority is not None else "medium",
                 "id": task.id
             }
             for task in oh_tasks
@@ -434,7 +434,7 @@ async def create_task(
                 await taskmaster_service.add_task(
                     title=task.title,
                     description=task.description or "",
-                    priority=task.priority.lower() if task.priority else "medium"
+                    priority=task.priority.value.lower() if task.priority else "medium"
                 )
                 
             except Exception as ai_error:

@@ -25,7 +25,7 @@ class TaskmasterService:
         self._mock_tasks = []
         self._mock_initialized = False
         
-    async def _run_taskmaster_command(self, command: List[str], extra_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def _run_taskmaster_command(self, command: List[str], extra_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Execute a Taskmaster CLI command and return the result"""
         try:
             # Use mock data for development (task-master-ai package not installed)
@@ -56,7 +56,7 @@ class TaskmasterService:
             logger.error(f"Error running Taskmaster command: {e}")
             return await self._get_mock_data(command, extra_data)
     
-    async def _get_mock_data(self, command: List[str], extra_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def _get_mock_data(self, command: List[str], extra_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Return mock data for cloud environments where Taskmaster isn't available"""
         logger.info("Using mock data for cloud environment")
         
@@ -223,7 +223,7 @@ class TaskmasterService:
         return None
     
     async def add_task(self, title: str, description: str, priority: str = "medium", 
-                      dependencies: List[str] = None) -> Dict[str, Any]:
+                      dependencies: Optional[List[str]] = None) -> Dict[str, Any]:
         """Add a new task using Taskmaster AI"""
         prompt = f"Title: {title}\nDescription: {description}"
         
@@ -256,12 +256,12 @@ class TaskmasterService:
             else:
                 # Return the newly created task from real Taskmaster
                 tasks = await self.get_all_tasks()
-                return tasks[-1] if tasks else None
+                return tasks[-1] if tasks else {}
         
-        return None
+        return {}
     
     async def create_task(self, title: str, description: str, priority: str = "medium", 
-                         dependencies: List[str] = None) -> Dict[str, Any]:
+                         dependencies: Optional[List[str]] = None) -> Dict[str, Any]:
         """Alias for add_task method to match test expectations"""
         result = await self.add_task(title, description, priority, dependencies)
         if result:
@@ -346,7 +346,7 @@ class TaskmasterService:
                         return task
                 
                 logger.warning(f"Task {task_id} not found for expansion")
-                return None
+                return {}
             
             # Real Taskmaster command
             command = ["npx", "task-master-ai", "expand", "--id", task_id]
@@ -360,11 +360,11 @@ class TaskmasterService:
                 # Return updated task with subtasks
                 return await self.get_task_by_id(task_id)
             
-            return None
+            return {}
             
         except Exception as e:
             logger.error(f"Error expanding task: {e}")
-            return None
+            return {}
     
     async def analyze_task_complexity(self) -> Dict[str, Any]:
         """Analyze complexity of all tasks using Taskmaster AI"""
@@ -442,20 +442,20 @@ class TaskmasterService:
                         return task
                 
                 logger.warning(f"Task {task_id} not found for context update")
-                return None
+                return {}
             
             # Real Taskmaster command
             command = ["npx", "task-master-ai", "update-task", "--id", task_id, "--prompt", context]
             result = await self._run_taskmaster_command(command)
             
             if result.get("success"):
-                return await self.get_task_by_id(task_id)
+                return await self.get_task_by_id(task_id) or {}
             
-            return None
+            return {}
             
         except Exception as e:
             logger.error(f"Error updating task with context: {e}")
-            return None
+            return {}
     
     async def get_project_progress(self) -> Dict[str, Any]:
         """Get overall project progress and statistics"""

@@ -41,9 +41,21 @@ from src.backend.api.search import router as search_router
 from src.backend.routes.auth import router as auth_router
 from src.backend.docs.swagger_ui import setup_custom_swagger_ui, get_openapi_schema
 from src.backend.services.websocket_manager import periodic_cleanup
-# from src.backend.services.voice_recognition_service import voice_recognition_service
-# from src.backend.services.workflow_scheduler import workflow_scheduler
-# from src.backend.services.workflow_template_engine import workflow_template_engine
+# Temporarily disabled services for testing
+try:
+    from src.backend.services.voice_recognition_service import voice_recognition_service
+except ImportError:
+    voice_recognition_service = None
+
+try:
+    from src.backend.services.workflow_scheduler import workflow_scheduler
+except ImportError:
+    workflow_scheduler = None
+
+try:
+    from src.backend.services.workflow_template_engine import workflow_template_engine
+except ImportError:
+    workflow_template_engine = None
 
 # Configure logger
 logger.add("logs/ordnungshub.log", rotation="10 MB")
@@ -73,23 +85,29 @@ async def lifespan(app: FastAPI):
     logger.info("WebSocket cleanup task started")
     
     # Initialize voice recognition service
-    try:
-        await voice_recognition_service.initialize()
-        logger.info("Voice recognition service initialized")
-    except Exception as e:
-        logger.warning(f"Voice recognition service initialization failed: {e}")
+    if voice_recognition_service:
+        try:
+            await voice_recognition_service.initialize()
+            logger.info("Voice recognition service initialized")
+        except Exception as e:
+            logger.warning(f"Voice recognition service initialization failed: {e}")
+    else:
+        logger.info("Voice recognition service not available (disabled for testing)")
     
     # Initialize workflow services
-    try:
-        # Initialize built-in workflow templates
-        workflow_template_engine.initialize_built_in_templates(SessionLocal())
-        logger.info("Workflow templates initialized")
-        
-        # Start workflow scheduler
-        await workflow_scheduler.start()
-        logger.info("Workflow scheduler started")
-    except Exception as e:
-        logger.warning(f"Workflow services initialization failed: {e}")
+    if workflow_template_engine and workflow_scheduler:
+        try:
+            # Initialize built-in workflow templates
+            workflow_template_engine.initialize_built_in_templates(SessionLocal())
+            logger.info("Workflow templates initialized")
+            
+            # Start workflow scheduler
+            await workflow_scheduler.start()
+            logger.info("Workflow scheduler started")
+        except Exception as e:
+            logger.warning(f"Workflow services initialization failed: {e}")
+    else:
+        logger.info("Workflow services not available (disabled for testing)")
         
     yield
     
@@ -101,18 +119,20 @@ async def lifespan(app: FastAPI):
         logger.info("WebSocket cleanup task cancelled")
     
     # Shutdown voice recognition service
-    try:
-        await voice_recognition_service.shutdown()
-        logger.info("Voice recognition service shutdown")
-    except Exception as e:
-        logger.warning(f"Voice recognition service shutdown failed: {e}")
+    if voice_recognition_service:
+        try:
+            await voice_recognition_service.shutdown()
+            logger.info("Voice recognition service shutdown")
+        except Exception as e:
+            logger.warning(f"Voice recognition service shutdown failed: {e}")
     
     # Shutdown workflow services
-    try:
-        await workflow_scheduler.stop()
-        logger.info("Workflow scheduler stopped")
-    except Exception as e:
-        logger.warning(f"Workflow scheduler shutdown failed: {e}")
+    if workflow_scheduler:
+        try:
+            await workflow_scheduler.stop()
+            logger.info("Workflow scheduler stopped")
+        except Exception as e:
+            logger.warning(f"Workflow scheduler shutdown failed: {e}")
     
     # Shutdown
     logger.info("OrdnungsHub backend shutting down...")

@@ -205,9 +205,13 @@ def create_demo_workspaces(db: Session, user: User):
     for ws_data in workspaces_data:
         ws_data["user_id"] = user.id
         workspace = Workspace(**ws_data)
-        db.add(workspace)
         
-        # Mark as accessed recently
+        # Mark as accessed recently (commit first to get the ID)
+        db.add(workspace)
+        db.commit()
+        db.refresh(workspace)
+        
+        # Now update the timestamp
         workspace.last_accessed_at = datetime.now(timezone.utc) - timedelta(
             days=random.randint(0, 7)
         )
@@ -218,7 +222,7 @@ def create_demo_workspaces(db: Session, user: User):
 def create_demo_projects_and_tasks(db: Session, user: User):
     """Create demo projects and tasks"""
     # Get workspaces
-    workspaces = crud_workspace.get_by_user(db, user_id=user.id)
+    workspaces = crud_workspace.get_multi_by_user(db, user_id=user.id)
     work_workspace = next((ws for ws in workspaces if "Work" in ws.name), workspaces[0])
     
     # Create projects

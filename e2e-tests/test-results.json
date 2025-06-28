@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "totalTests": 15,
+    "passedTests": 1,
+    "failedTests": 14,
+    "successRate": "6.7"
+  },
+  "timestamp": "2025-06-27T23:04:30.047Z",
+  "results": [
+    {
+      "testName": "Backend Health Check",
+      "success": true,
+      "details": "Status: healthy",
+      "timestamp": "2025-06-27T23:03:58.163Z"
+    },
+    {
+      "testName": "Authentication Flow",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173",
+      "timestamp": "2025-06-27T23:04:02.499Z"
+    },
+    {
+      "testName": "Dashboard Test",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard",
+      "timestamp": "2025-06-27T23:04:06.280Z"
+    },
+    {
+      "testName": "Header Buttons Present",
+      "success": false,
+      "details": "Found 0 header buttons",
+      "timestamp": "2025-06-27T23:04:09.709Z"
+    },
+    {
+      "testName": "Navigate to Task Manager",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tasks",
+      "timestamp": "2025-06-27T23:04:13.600Z"
+    },
+    {
+      "testName": "Navigate to Workspaces",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/workspaces",
+      "timestamp": "2025-06-27T23:04:13.865Z"
+    },
+    {
+      "testName": "Navigate to File Manager",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/files",
+      "timestamp": "2025-06-27T23:04:16.077Z"
+    },
+    {
+      "testName": "Navigate to Smart Search",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/search",
+      "timestamp": "2025-06-27T23:04:16.325Z"
+    },
+    {
+      "testName": "Navigate to AI Assistant",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/ai-assistant",
+      "timestamp": "2025-06-27T23:04:18.536Z"
+    },
+    {
+      "testName": "Navigate to AI Content",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/ai-content",
+      "timestamp": "2025-06-27T23:04:18.814Z"
+    },
+    {
+      "testName": "Navigate to Automation",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/automation",
+      "timestamp": "2025-06-27T23:04:21.020Z"
+    },
+    {
+      "testName": "Navigate to Settings",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/settings",
+      "timestamp": "2025-06-27T23:04:21.297Z"
+    },
+    {
+      "testName": "/dashboard - Interaction Test",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard",
+      "timestamp": "2025-06-27T23:04:23.498Z"
+    },
+    {
+      "testName": "/tasks - Interaction Test",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tasks",
+      "timestamp": "2025-06-27T23:04:25.728Z"
+    },
+    {
+      "testName": "/workspaces - Interaction Test",
+      "success": false,
+      "details": "Error: net::ERR_CONNECTION_REFUSED at http://localhost:5173/workspaces",
+      "timestamp": "2025-06-27T23:04:28.206Z"
+    }
+  ]
+}

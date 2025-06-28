@@ -245,7 +245,7 @@ def create_demo_projects_and_tasks(db: Session, user: User):
         # Convert datetime objects to avoid serialization issues
         if "start_date" in proj_data:
             proj_data["start_date"] = proj_data["start_date"]
-        project = Project(**proj_data, workspace_id=work_workspace.id)
+        project = Project(**proj_data)
         db.add(project)
         created_projects.append(project)
     

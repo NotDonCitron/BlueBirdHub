@@ -141,11 +141,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  flex-shrink: 0;
 }
 
 .header-action-btn:hover {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+.header-action-btn:active {
+  transform: scale(0.95);
 }
 
 /* Responsive Design */

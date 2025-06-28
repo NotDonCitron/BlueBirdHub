@@ -1,0 +1,29 @@
+{
+  "name": "ordnungshub-e2e-tests",
+  "version": "1.0.0",
+  "description": "Human-like automated E2E tests for OrdnungsHub frontend",
+  "main": "test-frontend-puppeteer.js",
+  "scripts": {
+    "test": "node test-frontend-puppeteer.js",
+    "test:headless": "node test-frontend-puppeteer.js --headless",
+    "setup": "npm install && npm run health-check && npm run frontend-check",
+    "health-check": "node -e \"fetch('http://localhost:8000/health').then(r=>r.json()).then(d=>console.log('✅ Backend:',d.status)).catch(()=>console.log('❌ Backend not running'))\"",
+    "frontend-check": "node -e \"fetch('http://localhost:5173').then(()=>console.log('✅ Frontend running')).catch(()=>console.log('❌ Frontend not running'))\"",
+    "quick-test": "node quick-test.js",
+    "verify-fixes": "node verify-fixes.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.1",
+    "node-fetch": "^2.7.0"
+  },
+  "keywords": [
+    "puppeteer",
+    "testing",
+    "automation",
+    "frontend",
+    "e2e",
+    "ordnungshub"
+  ],
+  "author": "OrdnungsHub Testing Suite",
+  "license": "MIT"
+} 

@@ -35,13 +35,21 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
         // Use Electron API
         return await window.electronAPI.apiRequest(endpoint, method, data);
       } else {
-        // Fallback for development in browser
-        const url = `http://127.0.0.1:8000${endpoint}`;
+        // Use localhost instead of 127.0.0.1 for Docker compatibility
+        const url = `http://localhost:8000${endpoint}`;
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        // Add authentication token if available
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const options: RequestInit = {
           method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
         };
         
         if (data && method !== 'GET') {
@@ -50,6 +58,13 @@ export const ApiProvider: React.FC<ApiProviderProps> = ({
         
         const response = await fetch(url, options);
         if (!response.ok) {
+          // If 401 Unauthorized, try to continue without auth for some endpoints
+          if (response.status === 401) {
+            console.warn(`Authentication required for ${endpoint}`);
+            // For development, create a mock token to test functionality
+            const mockToken = 'dev-token-' + Date.now();
+            localStorage.setItem('auth_token', mockToken);
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         

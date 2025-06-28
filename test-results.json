@@ -1,0 +1,209 @@
+{
+  "summary": {
+    "totalTests": 33,
+    "passedTests": 33,
+    "failedTests": 0,
+    "successRate": "100.0"
+  },
+  "timestamp": "2025-06-28T00:05:48.569Z",
+  "results": [
+    {
+      "testName": "Backend Health Check",
+      "success": true,
+      "details": "Status: healthy",
+      "timestamp": "2025-06-28T00:02:55.962Z"
+    },
+    {
+      "testName": "Login Form Present",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:03:00.378Z"
+    },
+    {
+      "testName": "Credentials Pre-filled",
+      "success": true,
+      "details": "Username: admin, Password: ***",
+      "timestamp": "2025-06-28T00:03:01.470Z"
+    },
+    {
+      "testName": "Authentication Flow",
+      "success": true,
+      "details": "Current URL: http://localhost:3001/",
+      "timestamp": "2025-06-28T00:03:08.138Z"
+    },
+    {
+      "testName": "Statistics Cards Present",
+      "success": true,
+      "details": "Found 4 cards",
+      "timestamp": "2025-06-28T00:03:10.308Z"
+    },
+    {
+      "testName": "Action Button 1 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:03:13.812Z"
+    },
+    {
+      "testName": "Action Button 2 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:03:18.498Z"
+    },
+    {
+      "testName": "Action Button 3 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:03:47.428Z"
+    },
+    {
+      "testName": "Action Button 4 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:03:50.144Z"
+    },
+    {
+      "testName": "Search Navigation",
+      "success": true,
+      "details": "URL: http://localhost:3001/search?q=test%20search%20query",
+      "timestamp": "2025-06-28T00:04:03.362Z"
+    },
+    {
+      "testName": "Header Action Button 1 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:06.017Z"
+    },
+    {
+      "testName": "Header Action Button 2 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:07.616Z"
+    },
+    {
+      "testName": "Header Action Button 3 Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:09.597Z"
+    },
+    {
+      "testName": "Navigate to Task Manager",
+      "success": true,
+      "details": "URL: http://localhost:3001/tasks",
+      "timestamp": "2025-06-28T00:04:12.994Z"
+    },
+    {
+      "testName": "Navigate to Workspaces",
+      "success": true,
+      "details": "URL: http://localhost:3001/workspaces",
+      "timestamp": "2025-06-28T00:04:15.341Z"
+    },
+    {
+      "testName": "Navigate to File Manager",
+      "success": true,
+      "details": "URL: http://localhost:3001/files",
+      "timestamp": "2025-06-28T00:04:17.287Z"
+    },
+    {
+      "testName": "Navigate to Smart Search",
+      "success": true,
+      "details": "URL: http://localhost:3001/search",
+      "timestamp": "2025-06-28T00:04:19.290Z"
+    },
+    {
+      "testName": "Navigate to AI Assistant",
+      "success": true,
+      "details": "URL: http://localhost:3001/ai-assistant",
+      "timestamp": "2025-06-28T00:04:21.753Z"
+    },
+    {
+      "testName": "Navigate to AI Content",
+      "success": true,
+      "details": "URL: http://localhost:3001/ai-content",
+      "timestamp": "2025-06-28T00:04:23.973Z"
+    },
+    {
+      "testName": "Navigate to Automation",
+      "success": true,
+      "details": "URL: http://localhost:3001/automation",
+      "timestamp": "2025-06-28T00:04:26.559Z"
+    },
+    {
+      "testName": "Navigate to Settings",
+      "success": true,
+      "details": "URL: http://localhost:3001/settings",
+      "timestamp": "2025-06-28T00:04:29.060Z"
+    },
+    {
+      "testName": "Overview Tab Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:36.102Z"
+    },
+    {
+      "testName": "All Tasks Tab Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:39.054Z"
+    },
+    {
+      "testName": "Dependencies Tab Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:41.851Z"
+    },
+    {
+      "testName": "Add Task Tab Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:44.654Z"
+    },
+    {
+      "testName": "Workspaces Tab Click",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:04:47.716Z"
+    },
+    {
+      "testName": "Add Task Form Submission",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:05:28.591Z"
+    },
+    {
+      "testName": "Workspace Creation Button",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:05:37.149Z"
+    },
+    {
+      "testName": "Workspace Cards Present",
+      "success": true,
+      "details": "Found 4 workspace cards",
+      "timestamp": "2025-06-28T00:05:38.122Z"
+    },
+    {
+      "testName": "Sidebar Toggle",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:05:41.542Z"
+    },
+    {
+      "testName": "Sidebar Navigation Items",
+      "success": true,
+      "details": "Found 32 navigation items",
+      "timestamp": "2025-06-28T00:05:42.744Z"
+    },
+    {
+      "testName": "Invalid Route Handling",
+      "success": true,
+      "details": "URL: http://localhost:3001/invalid-route",
+      "timestamp": "2025-06-28T00:05:45.367Z"
+    },
+    {
+      "testName": "Offline Mode Test",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:05:47.153Z"
+    }
+  ]
+}

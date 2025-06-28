@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../contexts/ApiContext';
+import { useAuth } from '../../contexts/AuthContext';
 import './TaskManager.css';
 
 interface Task {
@@ -58,6 +59,7 @@ interface DependencyEdge {
 
 const TaskManager: React.FC = () => {
   const { makeApiRequest } = useApi();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   
   // State management
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -84,20 +86,35 @@ const TaskManager: React.FC = () => {
   });
 
   useEffect(() => {
-    loadTaskData();
-    loadWorkspaces();
-  }, []);
+    // Only load data when user is authenticated
+    if (isAuthenticated && !authLoading) {
+      loadTaskData();
+    }
+  }, [isAuthenticated, authLoading]);
 
   const loadWorkspaces = async () => {
+    // Don't load if not authenticated
+    if (!isAuthenticated) {
+      console.log('Skipping workspace load - user not authenticated');
+      return;
+    }
+
     try {
       const response = await makeApiRequest('/workspaces/');
       setWorkspaces(response);
     } catch (error) {
       console.error('Failed to load workspaces:', error);
+      setWorkspaces([]);
     }
   };
 
   const loadWorkspaceOverview = async () => {
+    // Don't load if not authenticated
+    if (!isAuthenticated) {
+      console.log('Skipping workspace overview load - user not authenticated');
+      return;
+    }
+
     try {
       const response = await makeApiRequest('/tasks/taskmaster/workspace-overview');
       if (response.success) {
@@ -109,6 +126,8 @@ const TaskManager: React.FC = () => {
   };
 
   const suggestWorkspaceForTask = async (title: string, description: string) => {
+    if (!isAuthenticated) return null;
+    
     try {
       const response = await makeApiRequest('/tasks/taskmaster/suggest-workspace', 'POST', {
         title,
@@ -141,12 +160,19 @@ const TaskManager: React.FC = () => {
   };
 
   const loadTaskData = async () => {
+    // Don't load if not authenticated
+    if (!isAuthenticated) {
+      console.log('Skipping task data load - user not authenticated');
+      return;
+    }
+
     setIsLoading(true);
     try {
       await Promise.all([
         loadTasks(),
         loadProgress(),
-        loadNextTask()
+        loadNextTask(),
+        loadWorkspaces()
       ]);
     } catch (error) {
       console.error('Failed to load task data:', error);

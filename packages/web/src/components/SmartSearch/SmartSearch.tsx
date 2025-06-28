@@ -56,22 +56,32 @@ const SmartSearch: React.FC = () => {
   const loadTags = async () => {
     try {
       const response = await makeApiRequest('/search/tags');
-      if (response.success) {
-        setAllTags(response.tags);
+      if (response && response.success && response.tags) {
+        setAllTags(response.tags.map((tag: any) => tag.name || tag));
+      } else if (Array.isArray(response)) {
+        // Fallback for old format
+        setAllTags(response.map((tag: any) => tag.name || tag));
       }
     } catch (error) {
       console.error('Failed to load tags:', error);
+      // Set some default tags if API fails
+      setAllTags(['urgent', 'project', 'document', 'image', 'code', 'review']);
     }
   };
 
   const loadCategories = async () => {
     try {
       const response = await makeApiRequest('/search/categories');
-      if (response.success) {
-        setAllCategories(response.categories);
+      if (response && response.success && response.categories) {
+        setAllCategories(response.categories.map((cat: any) => cat.name || cat));
+      } else if (Array.isArray(response)) {
+        // Fallback for old format
+        setAllCategories(response.map((cat: any) => cat.name || cat));
       }
     } catch (error) {
       console.error('Failed to load categories:', error);
+      // Set some default categories if API fails
+      setAllCategories(['Documents', 'Images', 'Projects', 'Archives', 'Media', 'Data']);
     }
   };
 

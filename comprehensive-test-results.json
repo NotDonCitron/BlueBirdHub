@@ -1,0 +1,252 @@
+{
+  "summary": {
+    "totalTests": 40,
+    "passedTests": 21,
+    "failedTests": 19,
+    "successRate": "52.5%",
+    "testDuration": "37.1s"
+  },
+  "timestamp": "2025-06-28T00:22:53.925Z",
+  "results": [
+    {
+      "testName": "Login Form Present",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:22:20.748Z"
+    },
+    {
+      "testName": "Authentication Success",
+      "success": true,
+      "details": "URL: http://localhost:3001/",
+      "timestamp": "2025-06-28T00:22:24.529Z"
+    },
+    {
+      "testName": "Task Title Entered",
+      "success": true,
+      "details": "Test Task 1751070147844",
+      "timestamp": "2025-06-28T00:22:28.087Z"
+    },
+    {
+      "testName": "Task Description Entered",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-06-28T00:22:28.731Z"
+    },
+    {
+      "testName": "Task Creation Form Submission",
+      "success": true,
+      "details": "Created: Test Task 1751070147844",
+      "timestamp": "2025-06-28T00:22:30.972Z"
+    },
+    {
+      "testName": "Workspace Overview API",
+      "success": true,
+      "details": "Workspaces: 2",
+      "timestamp": "2025-06-28T00:22:33.345Z"
+    },
+    {
+      "testName": "Workspace 1 Has Tasks",
+      "success": true,
+      "details": "18 tasks",
+      "timestamp": "2025-06-28T00:22:33.346Z"
+    },
+    {
+      "testName": "Workspace 2 Has Tasks",
+      "success": true,
+      "details": "2 tasks",
+      "timestamp": "2025-06-28T00:22:33.346Z"
+    },
+    {
+      "testName": "Workspace Switching",
+      "success": true,
+      "details": "Switched to second workspace",
+      "timestamp": "2025-06-28T00:22:34.900Z"
+    },
+    {
+      "testName": "Workspace Content Loads",
+      "success": false,
+      "details": "",
+      "timestamp": "2025-06-28T00:22:34.901Z"
+    },
+    {
+      "testName": "Workspace 1 Files API",
+      "success": true,
+      "details": "Files: 0",
+      "timestamp": "2025-06-28T00:22:37.005Z"
+    },
+    {
+      "testName": "Workspace 2 Files API",
+      "success": true,
+      "details": "Files: 0",
+      "timestamp": "2025-06-28T00:22:37.014Z"
+    },
+    {
+      "testName": "Workspace 3 Files API",
+      "success": true,
+      "details": "Files: 0",
+      "timestamp": "2025-06-28T00:22:37.022Z"
+    },
+    {
+      "testName": "File Upload UI Available",
+      "success": false,
+      "details": "No file input found",
+      "timestamp": "2025-06-28T00:22:37.031Z"
+    },
+    {
+      "testName": "File Management Actions Available",
+      "success": false,
+      "details": "0 actions",
+      "timestamp": "2025-06-28T00:22:37.036Z"
+    },
+    {
+      "testName": "Search API Endpoint",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:39.417Z"
+    },
+    {
+      "testName": "AI Content Features Available",
+      "success": false,
+      "details": "0 features",
+      "timestamp": "2025-06-28T00:22:43.357Z"
+    },
+    {
+      "testName": "AI API: /ai/text/analyze",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:43.364Z"
+    },
+    {
+      "testName": "AI API: /ai/text/summarize",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:43.369Z"
+    },
+    {
+      "testName": "AI API: /ai/content/categorize",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:43.373Z"
+    },
+    {
+      "testName": "Automation UI Elements",
+      "success": false,
+      "details": "0 elements",
+      "timestamp": "2025-06-28T00:22:45.253Z"
+    },
+    {
+      "testName": "Automation API",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:45.258Z"
+    },
+    {
+      "testName": "Automation Features",
+      "success": false,
+      "details": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Create\"), .create-workflow, .new-automation' is not a valid selector.",
+      "timestamp": "2025-06-28T00:22:45.261Z"
+    },
+    {
+      "testName": "Settings Sections Available",
+      "success": false,
+      "details": "0 sections",
+      "timestamp": "2025-06-28T00:22:47.340Z"
+    },
+    {
+      "testName": "Settings & Configuration",
+      "success": false,
+      "details": "SyntaxError: Failed to execute 'querySelector' on 'Document': 'button:has-text(\"Save\"), .save-settings, button[type=\"submit\"]' is not a valid selector.",
+      "timestamp": "2025-06-28T00:22:47.342Z"
+    },
+    {
+      "testName": "Collaboration API: /collaboration/workspaces",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:47.346Z"
+    },
+    {
+      "testName": "Collaboration API: /collaboration/teams",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:47.349Z"
+    },
+    {
+      "testName": "Collaboration API: /collaboration/shared-tasks",
+      "success": false,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:47.356Z"
+    },
+    {
+      "testName": "Collaboration Features",
+      "success": false,
+      "details": "SyntaxError: Failed to execute 'querySelectorAll' on 'Document': 'button[aria-label*=\"share\"], .share-btn, button:has-text(\"Share\")' is not a valid selector.",
+      "timestamp": "2025-06-28T00:22:49.487Z"
+    },
+    {
+      "testName": "Error Handling: /non-existent-page",
+      "success": false,
+      "details": "Error page displayed",
+      "timestamp": "2025-06-28T00:22:50.913Z"
+    },
+    {
+      "testName": "Error Handling: /invalid/route/test",
+      "success": false,
+      "details": "Error page displayed",
+      "timestamp": "2025-06-28T00:22:52.601Z"
+    },
+    {
+      "testName": "Error Handling: /api/fake-endpoint",
+      "success": true,
+      "details": "Error page displayed",
+      "timestamp": "2025-06-28T00:22:53.875Z"
+    },
+    {
+      "testName": "API Error Handling",
+      "success": true,
+      "details": "Status: 404",
+      "timestamp": "2025-06-28T00:22:53.879Z"
+    },
+    {
+      "testName": "Performance Monitoring API",
+      "success": true,
+      "details": "Status: 401",
+      "timestamp": "2025-06-28T00:22:53.883Z"
+    },
+    {
+      "testName": "API GET /health",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:53.888Z"
+    },
+    {
+      "testName": "API GET /workspaces/",
+      "success": false,
+      "details": "Status: 401",
+      "timestamp": "2025-06-28T00:22:53.891Z"
+    },
+    {
+      "testName": "API GET /tasks/taskmaster/all",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:53.900Z"
+    },
+    {
+      "testName": "API GET /tasks/taskmaster/workspace-overview",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:53.911Z"
+    },
+    {
+      "testName": "API GET /workspaces/1/files",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:53.918Z"
+    },
+    {
+      "testName": "API GET /workspaces/2/files",
+      "success": true,
+      "details": "Status: 200",
+      "timestamp": "2025-06-28T00:22:53.925Z"
+    }
+  ]
+}

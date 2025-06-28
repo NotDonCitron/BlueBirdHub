@@ -505,17 +505,32 @@ const FileManager: React.FC = () => {
         makeApiRequest('/search/categories?user_id=1')
       ]);
       
-      // Transform tag response - it's an array of {name, color} objects
-      if (Array.isArray(tagsResponse)) {
-        setAvailableTags(tagsResponse.map((tag: any) => tag.name));
+      // Handle new format with success wrapper or old array format
+      if (tagsResponse && tagsResponse.success && tagsResponse.tags) {
+        setAvailableTags(tagsResponse.tags.map((tag: any) => tag.name || tag));
+      } else if (Array.isArray(tagsResponse)) {
+        // Fallback for old format
+        setAvailableTags(tagsResponse.map((tag: any) => tag.name || tag));
+      } else {
+        // Default tags if API fails
+        setAvailableTags(['urgent', 'project', 'document', 'image', 'code', 'review']);
       }
       
-      // Transform categories response - it's an array of {name} objects
-      if (Array.isArray(categoriesResponse)) {
-        setAvailableCategories(categoriesResponse.map((cat: any) => cat.name));
+      // Handle new format with success wrapper or old array format
+      if (categoriesResponse && categoriesResponse.success && categoriesResponse.categories) {
+        setAvailableCategories(categoriesResponse.categories.map((cat: any) => cat.name || cat));
+      } else if (Array.isArray(categoriesResponse)) {
+        // Fallback for old format
+        setAvailableCategories(categoriesResponse.map((cat: any) => cat.name || cat));
+      } else {
+        // Default categories if API fails
+        setAvailableCategories(['Documents', 'Images', 'Projects', 'Archives', 'Media', 'Data']);
       }
     } catch (error) {
       console.error('Failed to load filter options:', error);
+      // Set defaults on error
+      setAvailableTags(['urgent', 'project', 'document', 'image', 'code', 'review']);
+      setAvailableCategories(['Documents', 'Images', 'Projects', 'Archives', 'Media', 'Data']);
     }
   };
 

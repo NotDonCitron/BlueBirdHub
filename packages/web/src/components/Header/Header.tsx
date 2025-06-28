@@ -68,6 +68,38 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const handleNotifications = () => {
+    alert('Notifications feature coming soon!\nYou will receive alerts for:\n• Task deadlines\n• System updates\n• Collaboration requests');
+  };
+
+  const handleQuickActions = () => {
+    const action = window.confirm('Quick Actions:\n\nOK = Create new task\nCancel = Open AI Assistant');
+    if (action) {
+      navigate('/tasks');
+    } else {
+      navigate('/ai-assistant');
+    }
+  };
+
+  const handleHelp = () => {
+    const helpText = `OrdnungsHub Help:
+
+🏠 Dashboard - Overview and quick actions
+📋 Tasks - AI-powered task management
+🗂️ Workspaces - File organization
+📁 Files - File management
+🔍 Search - Smart search across all data
+🤖 AI Assistant - AI-powered analysis
+⚙️ Settings - System configuration
+
+Tips:
+• Use AI workspace suggestions when creating tasks
+• Analyze task complexity before starting
+• Use dependencies to order your work
+• Let AI organize your files automatically`;
+    alert(helpText);
+  };
+
   return (
     <header className="header">
       <div className="header-left">
@@ -114,13 +146,13 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="header-actions">
-          <button className="header-action-btn" title="Notifications">
+          <button className="header-action-btn" title="Notifications" onClick={handleNotifications}>
             🔔
           </button>
-          <button className="header-action-btn" title="Quick Actions">
+          <button className="header-action-btn" title="Quick Actions" onClick={handleQuickActions}>
             ⚡
           </button>
-          <button className="header-action-btn" title="Help">
+          <button className="header-action-btn" title="Help" onClick={handleHelp}>
             ❓
           </button>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApi } from '../../contexts/ApiContext';
+import { useAuth } from '../../contexts/AuthContext';
 import './WorkspaceManager.css';
 
 interface Workspace {
@@ -37,6 +38,7 @@ interface FileWorkspaceCreationResult {
 
 export const WorkspaceManager: React.FC = () => {
   const { makeApiRequest } = useApi();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [fileWorkspaceTemplates, setFileWorkspaceTemplates] = useState<FileWorkspaceTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,11 +90,20 @@ export const WorkspaceManager: React.FC = () => {
   ];
 
   useEffect(() => {
-    loadWorkspaces();
-    loadFileWorkspaceTemplates();
-  }, []);
+    // Only load data when user is authenticated
+    if (isAuthenticated && !authLoading) {
+      loadWorkspaces();
+      loadFileWorkspaceTemplates();
+    }
+  }, [isAuthenticated, authLoading]);
 
   const loadWorkspaces = async () => {
+    // Don't load if not authenticated
+    if (!isAuthenticated) {
+      console.log('Skipping workspace load - user not authenticated');
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await makeApiRequest('/workspaces/');
@@ -110,6 +121,12 @@ export const WorkspaceManager: React.FC = () => {
   };
 
   const loadFileWorkspaceTemplates = async () => {
+    // Don't load if not authenticated
+    if (!isAuthenticated) {
+      console.log('Skipping template load - user not authenticated');
+      return;
+    }
+
     try {
       const response = await makeApiRequest('/file-management/workspace-templates');
       // Merge API templates with our enhanced templates
@@ -328,6 +345,23 @@ export const WorkspaceManager: React.FC = () => {
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
   };
+
+  // Show loading state for authentication or workspace loading
+  if (authLoading) {
+    return (
+      <div className="workspace-manager">
+        <div className="loading">Authenticating...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="workspace-manager">
+        <div className="loading">Please log in to access workspaces.</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

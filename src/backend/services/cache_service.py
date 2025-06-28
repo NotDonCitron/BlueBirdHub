@@ -4,6 +4,7 @@ Implements intelligent caching strategies with TTL management and cache invalida
 """
 import json
 import hashlib
+import os
 from typing import Any, Optional, List, Dict, Union
 from datetime import datetime, timedelta
 import redis
@@ -19,9 +20,13 @@ class CacheService:
     Intelligent Redis caching service with multiple cache strategies
     """
     
-    def __init__(self, redis_url: str = "redis://localhost:6379"):
+    def __init__(self, redis_url: str = None):
         """Initialize Redis connection with retry logic"""
         try:
+            # Get Redis URL from environment or use default
+            if redis_url is None:
+                redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+            
             self.redis_client = redis.from_url(
                 redis_url,
                 decode_responses=False,  # Use bytes for pickle serialization

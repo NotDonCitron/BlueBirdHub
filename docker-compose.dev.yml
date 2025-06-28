@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # Development Backend (with hot reload)
+  bluebbird-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: bluebbird-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Debug port
+    environment:
+      - NODE_ENV=development
+      - PYTHON_ENV=development
+      - DATABASE_URL=postgresql://bluebbirdhub:devpass123@postgres:5432/bluebbirdhub_dev
+      - SECRET_KEY=dev-secret-key-not-for-production
+      - JWT_SECRET_KEY=dev-jwt-secret-key
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+      - LOG_LEVEL=DEBUG
+      - WORKERS=1  # Single worker for development
+      - REDIS_URL=redis://:devpass123@redis:6379
+      - ENABLE_SMART_ORGANIZATION=true
+      - ENABLE_AI_FEATURES=true
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=8000
+      # Add your AI API keys here for development
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src:cached
+      - ./alembic:/app/alembic:cached
+      - ./alembic.ini:/app/alembic.ini:cached
+      # Development data volumes
+      - dev_data:/app/data
+      - dev_uploads:/app/uploads
+      - dev_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bluebbird-dev
+    command: >
+      sh -c "
+        echo 'Starting development server with hot reload...' &&
+        uvicorn src.backend.main:app 
+          --host 0.0.0.0 
+          --port 8000 
+          --reload 
+          --reload-dir /app/src 
+          --log-level debug
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Development Database (optimized for speed)
+  postgres:
+    image: postgres:15-alpine
+    container_name: bluebbird-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=bluebbirdhub_dev
+      - POSTGRES_USER=bluebbirdhub
+      - POSTGRES_PASSWORD=devpass123
+      - POSTGRES_INITDB_ARGS=--auth-host=trust
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # Expose for direct access
+    networks:
+      - bluebbird-dev
+    command: >
+      postgres 
+        -c shared_preload_libraries=pg_stat_statements 
+        -c pg_stat_statements.track=all 
+        -c max_connections=100
+        -c shared_buffers=128MB
+        -c effective_cache_size=256MB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+        -c work_mem=4MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bluebbirdhub -d bluebbirdhub_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Development Redis (optimized for speed)
+  redis:
+    image: redis:7-alpine
+    container_name: bluebbird-redis-dev
+    restart: unless-stopped
+    command: >
+      redis-server 
+        --requirepass devpass123
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+        --save ""
+        --appendonly no
+    volumes:
+      - dev_redis_data:/data
+    ports:
+      - "6380:6379"  # Use different port to avoid conflicts
+    networks:
+      - bluebbird-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  # Development Frontend (Fixed to use packages/web)
+  frontend:
+    image: node:20-alpine
+    container_name: bluebbird-frontend-dev
+    working_dir: /app/packages/web
+    volumes:
+      - .:/app:cached
+      - /app/packages/web/node_modules:/app/packages/web/node_modules
+    ports:
+      - "5173:5173"
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    command: >
+      sh -c "
+        echo 'Installing dependencies in packages/web...' &&
+        npm install &&
+        echo 'Starting Vite dev server...' &&
+        npm run dev -- --host 0.0.0.0 --port 5173
+      "
+    networks:
+      - bluebbird-dev
+    profiles:
+      - frontend
+
+volumes:
+  dev_data:
+  dev_uploads:
+  dev_logs:
+  dev_postgres_data:
+  dev_redis_data:
+
+networks:
+  bluebbird-dev:
+    driver: bridge 

@@ -266,7 +266,7 @@ const TaskManager: React.FC = () => {
 
   const generateAIWorkspaceSuggestions = async (taskTitle: string, taskDescription: string) => {
     try {
-      const response = await makeApiRequest('/ai/suggest-workspaces', 'POST', {
+      const response = await makeApiRequest('/tasks/ai-suggestions', 'POST', {
         task_title: taskTitle,
         task_description: taskDescription,
         existing_workspaces: workspaces.map(w => ({ 
@@ -430,7 +430,7 @@ const TaskManager: React.FC = () => {
         }
       }
       
-      await makeApiRequest('/tasks/taskmaster', 'POST', taskToAdd);
+      await makeApiRequest('/tasks/taskmaster/add', 'POST', taskToAdd);
       setNewTask({ 
         title: '', 
         description: '', 

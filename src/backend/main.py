@@ -24,6 +24,8 @@ from src.backend.api.tasks import router as tasks_router
 from src.backend.api.dashboard import router as dashboard_router
 from src.backend.api.files import router as files_router
 from src.backend.api.file_management import router as file_management_router
+from src.backend.api.workspace_files import router as workspace_files_router
+from src.backend.api.ai_endpoints import router as ai_router
 from src.backend.api.collaboration import router as collaboration_router
 from src.backend.api.suppliers import router as suppliers_router
 from src.backend.api.performance import router as performance_router
@@ -31,6 +33,7 @@ from src.backend.api.smart_organization import router as smart_organization_rout
 from src.backend.api.automation import router as automation_router
 from src.backend.api.websocket import router as websocket_router
 from src.backend.api.calendar import router as calendar_router
+from src.backend.api.search import router as search_router
 # Temporarily disabled advanced features for testing
 # from src.backend.api.voice import router as voice_router
 # from src.backend.api.workflows import router as workflows_router
@@ -352,17 +355,14 @@ default_origins = [
 cors_origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
 cors_origins = [origin.strip() for origin in cors_origins_str.split(",")]
 
-# For development, be more permissive with CORS
-if os.getenv("NODE_ENV") != "production":
-    cors_origins = ["*"]  # Allow all origins in development
-    logger.info("CORS: Allowing all origins for development")
-else:
-    logger.info(f"CORS: Allowing origins: {cors_origins}")
+# For development, be more permissive with CORS - FORCING DEVELOPMENT MODE
+cors_origins = ["*"]  # Allow all origins in development
+logger.info("CORS: Allowing all origins for development (FORCED)")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
-    allow_credentials=True,
+    allow_origins=["*"],  # Explicitly allow all origins
+    allow_credentials=False,  # Cannot use credentials with allow_origins=["*"]
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
     expose_headers=["*"]
@@ -377,6 +377,7 @@ app.include_router(tasks_router)
 app.include_router(dashboard_router)
 app.include_router(files_router)
 app.include_router(file_management_router)
+app.include_router(workspace_files_router)
 app.include_router(collaboration_router)
 app.include_router(suppliers_router)
 app.include_router(performance_router)
@@ -384,6 +385,7 @@ app.include_router(smart_organization_router)
 app.include_router(automation_router)
 app.include_router(websocket_router)
 app.include_router(calendar_router)
+app.include_router(search_router)
 # Temporarily disabled advanced routers for testing
 # app.include_router(voice_router)
 # app.include_router(workflows_router)
@@ -516,8 +518,8 @@ async def seed_database_endpoint():
 if __name__ == "__main__":
     uvicorn.run(
         "src.backend.main:app",
-        host="127.0.0.1",
-        port=8001,
+        host="0.0.0.0",
+        port=8000,
         reload=True,
         log_level="info"
     )

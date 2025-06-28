@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../contexts/ApiContext';
 import './Dashboard.css';
 
@@ -18,6 +19,7 @@ const Dashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const { apiStatus, makeApiRequest } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (apiStatus === 'connected') {
@@ -71,6 +73,23 @@ const Dashboard: React.FC = () => {
   const getCompletionPercentage = () => {
     if (stats.totalTasks === 0) return 0;
     return Math.round((stats.completedTasks / stats.totalTasks) * 100);
+  };
+
+  const handleNewTask = () => {
+    navigate('/tasks');
+  };
+
+  const handleNewWorkspace = () => {
+    navigate('/workspaces');
+  };
+
+  const handleAnalytics = () => {
+    // For now, stay on dashboard and show an alert
+    alert('Analytics view coming soon! Dashboard stats are displayed above.');
+  };
+
+  const handleAIAssistant = () => {
+    navigate('/ai-assistant');
   };
 
   if (loading) {
@@ -146,24 +165,26 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-section">
           <h3>Quick Actions</h3>
           <div className="quick-actions">
-            <button className="action-card">
+            <button className="action-card" onClick={handleNewTask}>
               <div className="action-icon">➕</div>
               <div className="action-label">New Task</div>
             </button>
-            <button className="action-card">
+            <button className="action-card" onClick={handleNewWorkspace}>
               <div className="action-icon">🏠</div>
               <div className="action-label">New Workspace</div>
             </button>
-            <button className="action-card">
+            <button className="action-card" onClick={handleAnalytics}>
               <div className="action-icon">📊</div>
               <div className="action-label">Analytics</div>
             </button>
-            <button className="action-card">
+            <button className="action-card" onClick={handleAIAssistant}>
               <div className="action-icon">🤖</div>
               <div className="action-label">AI Assistant</div>
             </button>
           </div>
         </div>
+
+
 
         <div className="dashboard-section">
           <h3>Recent Activity</h3>

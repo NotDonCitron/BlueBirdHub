@@ -102,119 +102,53 @@ async def get_task_dependencies():
 async def get_workspace_task_overview():
     """Get task overview grouped by workspace"""
     try:
-        # Get all tasks and group them by workspace
+        # Get all tasks from Taskmaster service (includes newly created tasks)
         all_tasks = await taskmaster_service.get_all_tasks()
         
-        # Add workspace assignments to tasks
-        development_tasks = [
-            {
-                "id": "T001",
-                "title": "Setup Core Application Framework",
-                "description": "Create the foundational structure for OrdnungsHub",
-                "status": "done",
-                "priority": "high",
-                "workspace_id": 1
-            },
-            {
-                "id": "T002",
-                "title": "Implement Database Layer", 
-                "description": "Setup SQLite with SQLAlchemy ORM",
-                "status": "done",
-                "priority": "high",
-                "workspace_id": 1
-            },
-            {
-                "id": "T003",
-                "title": "Integrate Taskmaster AI System",
-                "description": "Connect OrdnungsHub with Taskmaster for intelligent task management",
-                "status": "done",
-                "priority": "high",
-                "workspace_id": 1
-            },
-            {
-                "id": "T005",
-                "title": "Deploy to Cloud Platform",
-                "description": "Make OrdnungsHub accessible online for demonstration",
-                "status": "in-progress",
-                "priority": "medium",
-                "workspace_id": 1
-            },
-            {
-                "id": "T007",
-                "title": "Test frontend integration",
-                "description": "Verify frontend can communicate with backend",
-                "status": "pending",
-                "priority": "high",
-                "workspace_id": 1
-            }
-        ]
+        # Group tasks by workspace_id
+        workspace_tasks = {}
+        for task in all_tasks:
+            # Assign tasks without workspace_id to workspace 1 by default
+            workspace_id = task.get("workspace_id")
+            if workspace_id is None:
+                workspace_id = 1
+                task["workspace_id"] = 1  # Update the task to include workspace_id
+            workspace_id = str(workspace_id)
+            
+            if workspace_id not in workspace_tasks:
+                workspace_tasks[workspace_id] = []
+            workspace_tasks[workspace_id].append(task)
         
-        design_tasks = [
-            {
-                "id": "T004",
-                "title": "Enhanced Workspace Management",
-                "description": "AI-powered workspace creation and content assignment",
-                "status": "done",
-                "priority": "medium",
-                "workspace_id": 2
-            },
-            {
-                "id": "T006",
-                "title": "Add Real-time Collaboration",
-                "description": "Enable multiple users to collaborate on workspaces",
-                "status": "pending",
-                "priority": "low",
-                "workspace_id": 2
-            },
-            {
-                "id": "UI001",
-                "title": "Create UI mockups",
-                "description": "Design user interface mockups for new features",
-                "status": "done",
-                "priority": "high",
-                "workspace_id": 2
-            }
-        ]
+        # Ensure we have at least two workspaces for demo purposes
+        if "1" not in workspace_tasks:
+            workspace_tasks["1"] = []
+        if "2" not in workspace_tasks:
+            workspace_tasks["2"] = []
         
-        # Calculate real statistics
-        dev_completed = len([t for t in development_tasks if t["status"] == "done"])
-        dev_in_progress = len([t for t in development_tasks if t["status"] == "in-progress"])
-        dev_pending = len([t for t in development_tasks if t["status"] == "pending"])
-        dev_total = len(development_tasks)
+        # Build overview for each workspace
+        overview = {}
+        workspace_names = {"1": "Development", "2": "Design", "3": "Research"}
+        workspace_colors = {"1": "#3b82f6", "2": "#10b981", "3": "#8b5cf6"}
         
-        design_completed = len([t for t in design_tasks if t["status"] == "done"])
-        design_in_progress = len([t for t in design_tasks if t["status"] == "in-progress"])
-        design_pending = len([t for t in design_tasks if t["status"] == "pending"])
-        design_total = len(design_tasks)
-        
-        overview = {
-            "1": {
-                "workspace_name": "Development",
-                "workspace_color": "#3b82f6",
+        for workspace_id, tasks in workspace_tasks.items():
+            completed = len([t for t in tasks if t.get("status") == "done"])
+            in_progress = len([t for t in tasks if t.get("status") == "in-progress"])
+            pending = len([t for t in tasks if t.get("status") == "pending"])
+            total = len(tasks)
+            
+            overview[workspace_id] = {
+                "workspace_name": workspace_names.get(workspace_id, f"Workspace {workspace_id}"),
+                "workspace_color": workspace_colors.get(workspace_id, "#6b7280"),
                 "statistics": {
-                    "total_tasks": dev_total,
-                    "completed_tasks": dev_completed,
-                    "in_progress_tasks": dev_in_progress,
-                    "pending_tasks": dev_pending,
-                    "completion_rate": round((dev_completed / dev_total) * 100, 1) if dev_total > 0 else 0
+                    "total_tasks": total,
+                    "completed_tasks": completed,
+                    "in_progress_tasks": in_progress,
+                    "pending_tasks": pending,
+                    "completion_rate": round((completed / total) * 100, 1) if total > 0 else 0
                 },
-                "recent_tasks": development_tasks[-3:],  # Last 3 tasks
-                "tasks": development_tasks
-            },
-            "2": {
-                "workspace_name": "Design",
-                "workspace_color": "#10b981",
-                "statistics": {
-                    "total_tasks": design_total,
-                    "completed_tasks": design_completed,
-                    "in_progress_tasks": design_in_progress,
-                    "pending_tasks": design_pending,
-                    "completion_rate": round((design_completed / design_total) * 100, 1) if design_total > 0 else 0
-                },
-                "recent_tasks": design_tasks[-2:],  # Last 2 tasks
-                "tasks": design_tasks
+                "recent_tasks": tasks[-3:] if tasks else [],  # Last 3 tasks
+                "tasks": tasks
             }
-        }
         
         return {
             "success": True,

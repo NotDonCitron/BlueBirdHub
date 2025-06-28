@@ -14,6 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string) => Promise<void>;
   logout: () => void;
+  loginWithCredentials: (username: string, password: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,8 +61,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(response);
     } catch (error) {
       console.error('Failed to fetch user info:', error);
-      // If fetching user info fails, clear the token
-      logout();
+      // If fetching user info fails, clear the invalid token and logout
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('auth_token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithCredentials = async (username: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Use default admin credentials if none provided
+      const actualUsername = username.trim() || 'admin';
+      const actualPassword = password.trim() || 'admin123';
+      
+      const response = await fetch('http://localhost:8000/auth/login-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          username: actualUsername, 
+          password: actualPassword 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.access_token) {
+          await login(data.access_token);
+          return true;
+        } else {
+          throw new Error('No access token received');
+        }
+      } else {
+        const errorText = await response.text();
+        console.error('Login failed:', errorText);
+        throw new Error(`Authentication failed: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      // Clear any invalid state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('auth_token');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +153,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!token && !!user,
     isLoading,
     login,
-    logout
+    logout,
+    loginWithCredentials
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -119,4 +166,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}; 
